@@ -19,7 +19,7 @@ class Controller {
   [[noreturn]] void spin();
 
  private:
-  Indicator m_indicator;
+  Indicator* m_indicator;
   Button m_button;
   Pump m_pump;
   BluetoothClient* m_bluetoothClient;
@@ -27,8 +27,4 @@ class Controller {
 
  private:
   void spinOnce();
-
- private:
-  void enablePump();
-  void disablePump();
 };

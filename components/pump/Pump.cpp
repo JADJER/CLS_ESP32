@@ -16,18 +16,55 @@
 
 #include <Arduino.h>
 
-Pump::Pump(int pinNum) {
-  m_pinNum = pinNum;
+Pump::Pump(int controlPin, int feedbackPin) {
+  m_delay = 5000;
+  m_state = PumpState::DISABLE;
+  m_controlPin = controlPin;
+  m_feedbackPin = feedbackPin;
+  m_startTime = 0;
 
-  pinMode(m_pinNum, OUTPUT);
+  pinMode(m_controlPin, OUTPUT);
+  pinMode(m_feedbackPin, INPUT_PULLDOWN);
 }
 
 Pump::~Pump() = default;
 
-void Pump::enable() {
-  digitalWrite(m_pinNum, 1);
+void Pump::enable(int delay) {
+  if (m_state != PumpState::DISABLE) { return; }
+
+  m_delay = delay;
+  m_state = PumpState::ENABLE;
+
+  digitalWrite(m_controlPin, HIGH);
+
+  m_startTime = millis();
 }
 
 void Pump::disable() {
-  digitalWrite(m_pinNum, 0);
+  if (m_state != PumpState::ENABLE) { return; }
+
+  m_state = PumpState::DISABLE;
+
+  digitalWrite(m_controlPin, LOW);
+}
+
+PumpState Pump::getState() const {
+  return m_state;
+}
+
+void Pump::spinOnce() {
+  if (m_state != PumpState::ENABLE) { return; }
+
+  auto feedback = digitalRead(m_feedbackPin);
+  if (feedback == LOW) {
+    disable();
+    m_state = PumpState::ERROR;
+    return;
+  }
+
+  auto currentTime = millis();
+  auto diffTime = currentTime - m_startTime;
+  if (diffTime > m_delay) {
+    disable();
+  }
 }

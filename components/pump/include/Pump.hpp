@@ -21,25 +21,48 @@
 #include <esp_err.h>
 #include <thread>
 
+enum PumpState {
+  ERROR,
+  DISABLE,
+  ENABLE
+};
+
 /**
  * @brief
  */
 class Pump {
  public:
-  explicit Pump(int pinNum);
+  explicit Pump(int controlPin, int feedbackPin);
   ~Pump();
 
  public:
   /**
    * @brief
    */
-  void enable();
+  void enable(int delay);
 
   /**
    * @brief
    */
   void disable();
 
+ public:
+  /**
+   * @brief
+   * @return
+   */
+  [[nodiscard]] PumpState getState() const;
+
+ public:
+  /**
+   * @brief
+   */
+  void spinOnce();
+
  protected:
-  int m_pinNum;
+  int m_delay;
+  int m_controlPin;
+  int m_feedbackPin;
+  PumpState m_state;
+  unsigned long m_startTime;
 };
