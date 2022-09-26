@@ -1,2 +1,2 @@
 # CLS_ESP32
-Сhain lubrication system
+Chain lubrication system
