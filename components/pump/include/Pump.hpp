@@ -13,10 +13,33 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 24.09.22.
+// Created by jadjer on 23.09.22.
 //
 
 #pragma once
 
-class BluetoothClient {
+#include <esp_err.h>
+#include <thread>
+
+/**
+ * @brief
+ */
+class Pump {
+ public:
+  explicit Pump(int pinNum);
+  ~Pump();
+
+ public:
+  /**
+   * @brief
+   */
+  void enable();
+
+  /**
+   * @brief
+   */
+  void disable();
+
+ protected:
+  int m_pinNum;
 };

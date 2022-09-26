@@ -5,7 +5,9 @@
 #pragma once
 
 #include "Bluetooth.hpp"
+#include "Button.hpp"
 #include "Indicator.hpp"
+#include "Pump.hpp"
 #include <esp_err.h>
 
 class Controller {
@@ -18,8 +20,15 @@ class Controller {
 
  private:
   Indicator m_indicator;
-  Bluetooth m_bluetooth;
+  Button m_button;
+  Pump m_pump;
+  BluetoothClient* m_bluetoothClient;
+  BluetoothServer* m_bluetoothServer;
 
  private:
   void spinOnce();
+
+ private:
+  void enablePump();
+  void disablePump();
 };

@@ -7,7 +7,9 @@ set(SOURCES
         Controller.cpp)
 
 set(COMPONENTS
-        bluetooth
-        indicator)
+        indicator
+        button
+        pump
+        bluetooth)
 
 idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS . REQUIRES ${COMPONENTS})

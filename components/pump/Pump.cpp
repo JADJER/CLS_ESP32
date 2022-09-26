@@ -12,11 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//
-// Created by jadjer on 24.09.22.
-//
+#include "Pump.hpp"
 
-#pragma once
+#include <Arduino.h>
 
-class BluetoothClient {
-};
+Pump::Pump(int pinNum) {
+  m_pinNum = pinNum;
+
+  pinMode(m_pinNum, OUTPUT);
+}
+
+Pump::~Pump() = default;
+
+void Pump::enable() {
+  digitalWrite(m_pinNum, 1);
+}
+
+void Pump::disable() {
+  digitalWrite(m_pinNum, 0);
+}
