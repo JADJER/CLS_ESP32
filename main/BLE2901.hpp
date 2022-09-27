@@ -13,21 +13,14 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 29.08.22.
+// Created by jadjer on 27.09.22.
 //
 
 #pragma once
 
-#include "BluetoothClient.hpp"
-#include "BluetoothServer.hpp"
-#include <string>
+#include <BLEDescriptor.h>
 
-class Bluetooth {
+class BLE2901 : public BLEDescriptor {
  public:
-  explicit Bluetooth(std::string const& name);
-  ~Bluetooth();
-
- public:
-  BluetoothClient* createClient();
-  BluetoothServer* createServer();
+  explicit BLE2901(std::string const& name);
 };

@@ -4,11 +4,14 @@
 
 #pragma once
 
-#include "Bluetooth.hpp"
+#include "AdvertisedDevice.hpp"
 #include "Button.hpp"
 #include "Indicator.hpp"
 #include "Pump.hpp"
-#include <esp_err.h>
+#include <BLEAdvertisedDevice.h>
+#include <BLECharacteristic.h>
+#include <BLEClient.h>
+#include <BLEServer.h>
 
 class Controller {
  public:
@@ -22,9 +25,14 @@ class Controller {
   Indicator* m_indicator;
   Button m_button;
   Pump m_pump;
-  BluetoothClient* m_bluetoothClient;
-  BluetoothServer* m_bluetoothServer;
+  BLEServer* m_server;
+  BLEClient* m_client;
+  AdvertisedDevice m_advertisedDevice;
+  BLECharacteristic* m_settingDistance;
+  BLECharacteristic* m_settingDelay;
+  BLECharacteristic* m_monitorOilLevel;
 
  private:
   void spinOnce();
+  bool connectToServer();
 };

@@ -13,14 +13,16 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 24.09.22.
+// Created by jadjer on 27.09.22.
 //
 
-#pragma once
+#include "ClientCallback.hpp"
 
-#include <BLEAdvertisedDevice.h>
+#include <Arduino.h>
 
-class AdvertisedHDSDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
- public:
-  void onResult(BLEAdvertisedDevice advertisedDevice) override;
-};
+void ClientCallback::onConnect(BLEClient* client) {
+}
+
+void ClientCallback::onDisconnect(BLEClient* client) {
+  log_i("onDisconnect");
+}

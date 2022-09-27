@@ -13,10 +13,24 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 24.09.22.
+// Created by jadjer on 27.09.22.
 //
 
 #pragma once
 
-class BluetoothClient {
+#include <BLEAdvertisedDevice.h>
+
+class AdvertisedDevice : public BLEAdvertisedDeviceCallbacks {
+ public:
+  AdvertisedDevice();
+
+ public:
+  void onResult(BLEAdvertisedDevice advertisedDevice) override;
+
+ public:
+  [[nodiscard]] bool isAdvertised() const;
+  [[nodiscard]] BLEAdvertisedDevice* getAdvertisedDevice() const;
+
+ private:
+  BLEAdvertisedDevice* m_device;
 };
