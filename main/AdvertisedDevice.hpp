@@ -28,7 +28,6 @@ class AdvertisedDevice : public BLEAdvertisedDeviceCallbacks {
   void onResult(BLEAdvertisedDevice advertisedDevice) override;
 
  public:
-  [[nodiscard]] bool isAdvertised() const;
   [[nodiscard]] BLEAdvertisedDevice* getAdvertisedDevice() const;
 
  private:

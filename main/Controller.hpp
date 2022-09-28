@@ -4,10 +4,11 @@
 
 #pragma once
 
-#include "AdvertisedDevice.hpp"
 #include "Button.hpp"
+#include "Distance.hpp"
 #include "Indicator.hpp"
 #include "Pump.hpp"
+#include "ServerCallback.hpp"
 #include <BLEAdvertisedDevice.h>
 #include <BLECharacteristic.h>
 #include <BLEClient.h>
@@ -25,14 +26,20 @@ class Controller {
   Indicator* m_indicator;
   Button m_button;
   Pump m_pump;
+  Distance m_distance;
   BLEServer* m_server;
   BLEClient* m_client;
-  AdvertisedDevice m_advertisedDevice;
+  ServerCallback m_serverCallback;
   BLECharacteristic* m_settingDistance;
   BLECharacteristic* m_settingDelay;
+  BLECharacteristic* m_monitorDistance;
   BLECharacteristic* m_monitorOilLevel;
+  BLERemoteCharacteristic* m_vehicleSpeed;
+  BLERemoteCharacteristic* m_vehicleState;
 
  private:
-  void spinOnce();
-  bool connectToServer();
+  void connectToServer();
+  void updateCharacteristics();
+  void manualLubricate();
+  void spinPump();
 };

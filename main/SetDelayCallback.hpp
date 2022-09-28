@@ -13,16 +13,24 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 27.09.22.
+// Created by jadjer on 28.09.22.
 //
 
-#include "ClientCallback.hpp"
+#pragma once
 
-#include <Arduino.h>
+#include <BLECharacteristic.h>
+#include <Preferences.h>
 
-void ClientCallback::onConnect(BLEClient* client) {
-}
+class SetDelayCallback : public BLECharacteristicCallbacks {
+ public:
+  SetDelayCallback();
+  ~SetDelayCallback() override;
 
-void ClientCallback::onDisconnect(BLEClient* client) {
-  log_i("onDisconnect");
-}
+ public:
+  void onRead(BLECharacteristic* pCharacteristic) override;
+  void onWrite(BLECharacteristic* pCharacteristic) override;
+
+ private:
+  Preferences m_preferences;
+  std::string m_preferenceKey;
+};

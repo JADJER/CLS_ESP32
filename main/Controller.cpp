@@ -3,11 +3,13 @@
 //
 
 #include "Controller.hpp"
+#include "AdvertisedDevice.hpp"
 #include "BLE2901.hpp"
 #include "BlinkIndicator.hpp"
-#include "ClientCallback.hpp"
 #include "ErrorCodeIndicator.hpp"
 #include "ServicesUUID.hpp"
+#include "SetDelayCallback.hpp"
+#include "SetDistanceCallback.hpp"
 #include <Arduino.h>
 #include <BLE2902.h>
 #include <BLEDevice.h>
@@ -19,21 +21,30 @@ Controller::Controller() : m_indicator(new BlinkIndicator(2)), m_button(0), m_pu
   m_indicator->blink(100);
 
   m_server = BLEDevice::createServer();
+  m_server->setCallbacks(&m_serverCallback);
+
+  m_client = BLEDevice::createClient();
 
   {
     auto service = m_server->createService(serviceSettingsUUID, 9);
 
     m_settingDistance = service->createCharacteristic(settingDistanceUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
-    m_settingDistance->addDescriptor(new BLE2901("Distance"));
+    m_settingDistance->setCallbacks(new SetDistanceCallback());
+    m_settingDistance->addDescriptor(new BLE2901("Minimal Distance"));
 
     m_settingDelay = service->createCharacteristic(settingDelayUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
-    m_settingDelay->addDescriptor(new BLE2901("Delay"));
+    m_settingDelay->setCallbacks(new SetDelayCallback());
+    m_settingDelay->addDescriptor(new BLE2901("Lubricate Time"));
 
     service->start();
   }
 
   {
-    auto service = m_server->createService(serviceMonitorUUID, 6);
+    auto service = m_server->createService(serviceMonitorUUID, 11);
+
+    m_monitorDistance = service->createCharacteristic(monitorDistanceUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+    m_monitorDistance->addDescriptor(new BLE2901("Distance"));
+    m_monitorDistance->addDescriptor(new BLE2902());
 
     m_monitorOilLevel = service->createCharacteristic(monitorOilLevelUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
     m_monitorOilLevel->addDescriptor(new BLE2901("Oil Level"));
@@ -49,15 +60,6 @@ Controller::Controller() : m_indicator(new BlinkIndicator(2)), m_button(0), m_pu
   log_i("HDS start scan...");
   m_indicator->blink(250);
 
-  m_client = nullptr;
-
-  BLEScan* BLEScan = BLEDevice::getScan();
-  BLEScan->setAdvertisedDeviceCallbacks(&m_advertisedDevice);
-  BLEScan->setInterval(1349);
-  BLEScan->setWindow(449);
-  BLEScan->setActiveScan(true);
-  BLEScan->start(5, false);
-
   log_i("Initialize done");
   m_indicator->enable();
 }
@@ -66,26 +68,92 @@ Controller::~Controller() = default;
 
 [[noreturn]] void Controller::spin() {
   while (true) {
-    spinOnce();
-    delay(10);
+    if (not m_client->isConnected()) { connectToServer(); }
+    if (m_serverCallback.isConnected()) { updateCharacteristics(); }
+    if (m_button.isPressed()) { manualLubricate(); }
+    if (m_pump.getState() != PumpState::ERROR) { spinPump(); }
+
+    delay(100);
   }
 }
 
-void Controller::spinOnce() {
-  if (m_pump.getState() == PumpState::ERROR) { return; }
+void Controller::connectToServer() {
+  AdvertisedDevice advertisedDevice;
 
-  if (not m_client and m_advertisedDevice.getAdvertisedDevice()) {
-    connectToServer();
+  auto scan = BLEDevice::getScan();
+  scan->setAdvertisedDeviceCallbacks(&advertisedDevice);
+  scan->setInterval(1349);
+  scan->setWindow(449);
+  scan->setActiveScan(false);
+  scan->start(5, false);
+
+  auto device = advertisedDevice.getAdvertisedDevice();
+  if (device == nullptr) { return; }
+
+  log_i("Forming a connection to %s", device->getAddress().toString().c_str());
+
+  m_client->connect(device);
+
+  if (not m_client->isConnected()) { return; }
+
+  log_i(" - Connected to server");
+
+  m_client->setMTU(517);
+
+  BLERemoteService* serviceVehicle = m_client->getService(serviceVehicleUUID);
+  if (serviceVehicle == nullptr) {
+    m_client->disconnect();
+    return;
   }
 
-  if (m_button.isPressed()) {
-
-    m_indicator->blink(500);
-    m_pump.enable(2000);
-
-    m_button.resetState();
+  m_vehicleSpeed = serviceVehicle->getCharacteristic(vehicleSpeedUUID);
+  if (m_vehicleSpeed == nullptr or not m_vehicleSpeed->canNotify()) {
+    m_client->disconnect();
+    return;
   }
 
+  m_vehicleState = serviceVehicle->getCharacteristic(vehicleStateUUID);
+  if (m_vehicleState == nullptr or not m_vehicleState->canNotify()) {
+    m_client->disconnect();
+    return;
+  }
+
+  m_vehicleSpeed->registerForNotify([=](auto characteristic, uint8_t const* data, size_t length, bool isNotify) {
+    if (not isNotify) { return; }
+    if (length == 0) { return; }
+
+    int speed = data[0];
+
+    m_distance.updateSpeed(speed);
+  });
+
+  m_vehicleState->registerForNotify([=](auto, uint8_t const* data, size_t length, bool isNotify) {
+    if (not isNotify) { return; }
+    if (length == 0) { return; }
+
+    int state = data[0];
+  });
+}
+
+void Controller::updateCharacteristics() {
+  int oilLevel = 100;
+  float distance = m_distance.getDistance();
+
+  m_monitorDistance->setValue(distance);
+  m_monitorDistance->notify();
+
+  m_monitorOilLevel->setValue(oilLevel);
+  m_monitorOilLevel->notify();
+}
+
+void Controller::manualLubricate() {
+  m_indicator->blink(500);
+  m_pump.enable(2000);
+
+  m_button.resetState();
+}
+
+void Controller::spinPump() {
   m_pump.spinOnce();
 
   switch (m_pump.getState()) {
@@ -100,47 +168,4 @@ void Controller::spinOnce() {
       m_indicator->blink(1);
       break;
   }
-}
-
-bool Controller::connectToServer() {
-  auto device = m_advertisedDevice.getAdvertisedDevice();
-  if (device == nullptr) {
-    return false;
-  }
-
-  log_i("Forming a connection to %s", device->getAddress().toString().c_str());
-
-  m_client = BLEDevice::createClient();
-  log_i(" - Created client");
-  m_client->setClientCallbacks(new ClientCallback());
-  m_client->connect(device);
-  log_i(" - Connected to server");
-  m_client->setMTU(517);
-
-  BLERemoteService* serviceVehicle = m_client->getService(serviceVehicleUUID);
-  if (serviceVehicle == nullptr) {
-    log_w("Failed to find our service UUID: %s", serviceVehicleUUID.toString().c_str());
-    m_client->disconnect();
-    return false;
-  }
-  log_i(" - Found our service");
-
-  auto speedCharacteristic = serviceVehicle->getCharacteristic(vehicleSpeedUUID);
-  if (speedCharacteristic == nullptr) {
-    log_w("Failed to find our characteristic UUID: %s", vehicleSpeedUUID.toString().c_str());
-    m_client->disconnect();
-    return false;
-  }
-  log_i(" - Found our characteristic");
-
-  if(speedCharacteristic->canRead()) {
-    int speedValue = speedCharacteristic->readUInt8();
-    log_i("The characteristic value was: %d", speedValue);
-  }
-
-  if(speedCharacteristic->canNotify()) {
-//    speed->registerForNotify(notifyCallback);
-  }
-
-  return true;
 }

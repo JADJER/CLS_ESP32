@@ -13,32 +13,30 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 27.09.22.
+// Created by jadjer on 28.09.22.
 //
 
-#include "AdvertisedDevice.hpp"
-#include "ServicesUUID.hpp"
+#include "ServerCallback.hpp"
+
 #include <Arduino.h>
-#include <BLEDevice.h>
 
-AdvertisedDevice::AdvertisedDevice() {
-  m_device = nullptr;
+ServerCallback::ServerCallback() {
+  m_isConnected = false;
 }
 
-void AdvertisedDevice::onResult(BLEAdvertisedDevice advertisedDevice) {
-  if (not advertisedDevice.haveServiceUUID()) {
-    return;
-  }
-
-  if (not advertisedDevice.isAdvertisingService(serviceAdvertiseUUID)) {
-    return;
-  }
-
-  BLEDevice::getScan()->stop();
-
-  m_device = new BLEAdvertisedDevice(advertisedDevice);
+void ServerCallback::onConnect(BLEServer* server) {
+  m_isConnected = true;
+  log_i("New device is connected");
+  server->startAdvertising();
 }
 
-BLEAdvertisedDevice* AdvertisedDevice::getAdvertisedDevice() const {
-  return m_device;
+void ServerCallback::onDisconnect(BLEServer* server) {
+  m_isConnected = false;
+  log_i("Device is disconnected");
+  delay(500);
+  server->startAdvertising();
+}
+
+bool ServerCallback::isConnected() const {
+  return m_isConnected;
 }

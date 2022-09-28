@@ -13,17 +13,24 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 23.09.22.
+// Created by jadjer on 28.09.22.
 //
 
-#include "Controller.hpp"
-#include <Arduino.h>
+#pragma once
 
-extern "C" void app_main() {
-  initArduino();
+#include <BLECharacteristic.h>
+#include <Preferences.h>
 
-//  delay(2000);
+class SetDistanceCallback : public BLECharacteristicCallbacks {
+ public:
+  SetDistanceCallback();
+  ~SetDistanceCallback() override;
 
-  Controller controller;
-  controller.spin();
-}
+ public:
+  void onRead(BLECharacteristic* pCharacteristic) override;
+  void onWrite(BLECharacteristic* pCharacteristic) override;
+
+ private:
+  Preferences m_preferences;
+  std::string m_preferenceKey;
+};

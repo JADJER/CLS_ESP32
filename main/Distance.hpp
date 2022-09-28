@@ -13,17 +13,27 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 23.09.22.
+// Created by jadjer on 28.09.22.
 //
 
-#include "Controller.hpp"
-#include <Arduino.h>
+#pragma once
 
-extern "C" void app_main() {
-  initArduino();
+#include <mutex>
 
-//  delay(2000);
+class Distance {
+ public:
+  Distance();
+  ~Distance();
 
-  Controller controller;
-  controller.spin();
-}
+ public:
+  void updateSpeed(uint8_t speed);
+
+ public:
+  float getDistance();
+
+ private:
+  float m_speed;
+  float m_distance;
+  std::mutex m_mutex;
+  unsigned long m_lastUpdate;
+};

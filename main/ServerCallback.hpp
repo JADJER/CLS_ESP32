@@ -13,15 +13,24 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 27.09.22.
+// Created by jadjer on 28.09.22.
 //
 
 #pragma once
 
-#include <BLEClient.h>
+#include <BLEServer.h>
 
-class ClientCallback : public BLEClientCallbacks {
+class ServerCallback : public BLEServerCallbacks {
  public:
-  void onConnect(BLEClient* client) override;
-  void onDisconnect(BLEClient* client) override;
+  ServerCallback();
+
+ public:
+  void onConnect(BLEServer* server) override;
+  void onDisconnect(BLEServer* server) override;
+
+ public:
+  [[nodiscard]] bool isConnected() const;
+
+ private:
+  bool m_isConnected;
 };
