@@ -3,67 +3,169 @@
 //
 
 #include "Controller.hpp"
+#include "AdvertisedDevice.hpp"
+#include "BLE2901.hpp"
+#include "BlinkIndicator.hpp"
+#include "ErrorCodeIndicator.hpp"
 #include "ServicesUUID.hpp"
+#include "SetDelayCallback.hpp"
+#include "SetDistanceCallback.hpp"
 #include <Arduino.h>
+#include <BLE2902.h>
+#include <BLEDevice.h>
 
-Controller::Controller() : m_indicator(2), m_bluetooth("CLS") {
-  log_i("Start bluetooth server...");
-  m_indicator.blink(100);
+Controller::Controller() : m_indicator(new BlinkIndicator(2)), m_button(0), m_pump(16, 17) {
+  BLEDevice::init("CLS");
 
-  m_bluetooth.createService(SERVICE_STATE_UUID, {
-                                                    STATE_CONNECTED_UUID,
-                                                });
+  log_i("Bluetooth server start ...");
+  m_indicator->blink(100);
 
-  m_bluetooth.start();
-  m_bluetooth.setValueString(STATE_CONNECTED_UUID, "Connecting...");
-  m_bluetooth.advertising();
+  m_server = BLEDevice::createServer();
+  m_server->setCallbacks(&m_serverCallback);
 
-  log_i("Connect to ECU...");
-  m_indicator.blink(250);
+  m_client = BLEDevice::createClient();
 
+  {
+    auto service = m_server->createService(serviceSettingsUUID, 9);
 
-  m_bluetooth.setValueString(STATE_CONNECTED_UUID, "Connected");
+    m_settingDistance = service->createCharacteristic(settingDistanceUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+    m_settingDistance->setCallbacks(new SetDistanceCallback());
+    m_settingDistance->addDescriptor(new BLE2901("Minimal Distance"));
 
-  log_i("Detect active tables...");
-  m_indicator.blink(500);
+    m_settingDelay = service->createCharacteristic(settingDelayUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+    m_settingDelay->setCallbacks(new SetDelayCallback());
+    m_settingDelay->addDescriptor(new BLE2901("Lubricate Time"));
 
-  m_ecu.detectActiveTables();
+    service->start();
+  }
+
+  {
+    auto service = m_server->createService(serviceMonitorUUID, 11);
+
+    m_monitorDistance = service->createCharacteristic(monitorDistanceUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+    m_monitorDistance->addDescriptor(new BLE2901("Distance"));
+    m_monitorDistance->addDescriptor(new BLE2902());
+
+    m_monitorOilLevel = service->createCharacteristic(monitorOilLevelUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+    m_monitorOilLevel->addDescriptor(new BLE2901("Oil Level"));
+    m_monitorOilLevel->addDescriptor(new BLE2902());
+
+    service->start();
+  }
+
+  BLEAdvertising* advertising = BLEDevice::getAdvertising();
+  advertising->addServiceUUID(serviceSettingsUUID);
+  advertising->start();
+
+  log_i("HDS start scan...");
+  m_indicator->blink(250);
 
   log_i("Initialize done");
-  m_indicator.enable();
+  m_indicator->enable();
 }
 
 Controller::~Controller() = default;
 
 [[noreturn]] void Controller::spin() {
   while (true) {
-    spinOnce();
-    delay(10);
+    if (not m_client->isConnected()) { connectToServer(); }
+    if (m_serverCallback.isConnected()) { updateCharacteristics(); }
+    if (m_button.isPressed()) { manualLubricate(); }
+    if (m_pump.getState() != PumpState::ERROR) { spinPump(); }
+
+    delay(100);
   }
 }
 
-void Controller::spinOnce() {
+void Controller::connectToServer() {
+  AdvertisedDevice advertisedDevice;
 
-  auto vehicleData = m_ecu.getVehicleData();
-  m_bluetooth.setValueString(VEHICLE_BATTERY_UUID, std::to_string(vehicleData.batteryVolts));
-  m_bluetooth.setValueString(VEHICLE_SPEED_UUID, std::to_string(vehicleData.speed));
-  m_bluetooth.setValueString(VEHICLE_STATE_UUID, std::to_string(vehicleData.state));
+  auto scan = BLEDevice::getScan();
+  scan->setAdvertisedDeviceCallbacks(&advertisedDevice);
+  scan->setInterval(1349);
+  scan->setWindow(449);
+  scan->setActiveScan(false);
+  scan->start(5, false);
 
-  auto engineData = m_ecu.getEngineData();
-  m_bluetooth.setValueString(ENGINE_RPM_UUID, std::to_string(engineData.rpm));
-  m_bluetooth.setValueString(ENGINE_FUEL_INJECT_UUID, std::to_string(engineData.fuelInject));
-  m_bluetooth.setValueString(ENGINE_IGNITION_ADVANCE_UUID, std::to_string(engineData.ignitionAdvance));
-  m_bluetooth.setValueString(ENGINE_UNKNOWN_1_UUID, std::to_string(engineData.unkData1));
-  m_bluetooth.setValueString(ENGINE_UNKNOWN_2_UUID, std::to_string(engineData.unkData2));
-  m_bluetooth.setValueString(ENGINE_UNKNOWN_3_UUID, std::to_string(engineData.unkData3));
+  auto device = advertisedDevice.getAdvertisedDevice();
+  if (device == nullptr) { return; }
 
-  auto sensorsData = m_ecu.getSensorsData();
-  m_bluetooth.setValueString(SENSORS_TPS_PERCENT_UUID, std::to_string(sensorsData.tpsPercent));
-  m_bluetooth.setValueString(SENSORS_TPS_VOLTAGE_UUID, std::to_string(sensorsData.tpsVolts));
-  m_bluetooth.setValueString(SENSORS_IAT_TEMP_UUID, std::to_string(sensorsData.iatTemp));
-  m_bluetooth.setValueString(SENSORS_IAT_VOLTAGE_UUID, std::to_string(sensorsData.iatVolts));
-  m_bluetooth.setValueString(SENSORS_ECT_TEMP_UUID, std::to_string(sensorsData.ectTemp));
-  m_bluetooth.setValueString(SENSORS_ECT_VOLTAGE_UUID, std::to_string(sensorsData.ectVolts));
-  m_bluetooth.setValueString(SENSORS_MAP_PRESSURE_UUID, std::to_string(sensorsData.mapPressure));
-  m_bluetooth.setValueString(SENSORS_MAP_VOLTAGE_UUID, std::to_string(sensorsData.mapVolts));
+  log_i("Forming a connection to %s", device->getAddress().toString().c_str());
+
+  m_client->connect(device);
+
+  if (not m_client->isConnected()) { return; }
+
+  log_i(" - Connected to server");
+
+  m_client->setMTU(517);
+
+  BLERemoteService* serviceVehicle = m_client->getService(serviceVehicleUUID);
+  if (serviceVehicle == nullptr) {
+    m_client->disconnect();
+    return;
+  }
+
+  m_vehicleSpeed = serviceVehicle->getCharacteristic(vehicleSpeedUUID);
+  if (m_vehicleSpeed == nullptr or not m_vehicleSpeed->canNotify()) {
+    m_client->disconnect();
+    return;
+  }
+
+  m_vehicleState = serviceVehicle->getCharacteristic(vehicleStateUUID);
+  if (m_vehicleState == nullptr or not m_vehicleState->canNotify()) {
+    m_client->disconnect();
+    return;
+  }
+
+  m_vehicleSpeed->registerForNotify([=](auto characteristic, uint8_t const* data, size_t length, bool isNotify) {
+    if (not isNotify) { return; }
+    if (length == 0) { return; }
+
+    int speed = data[0];
+
+    m_distance.updateSpeed(speed);
+  });
+
+  m_vehicleState->registerForNotify([=](auto, uint8_t const* data, size_t length, bool isNotify) {
+    if (not isNotify) { return; }
+    if (length == 0) { return; }
+
+    int state = data[0];
+  });
+}
+
+void Controller::updateCharacteristics() {
+  int oilLevel = 100;
+  float distance = m_distance.getDistance();
+
+  m_monitorDistance->setValue(distance);
+  m_monitorDistance->notify();
+
+  m_monitorOilLevel->setValue(oilLevel);
+  m_monitorOilLevel->notify();
+}
+
+void Controller::manualLubricate() {
+  m_indicator->blink(500);
+  m_pump.enable(2000);
+
+  m_button.resetState();
+}
+
+void Controller::spinPump() {
+  m_pump.spinOnce();
+
+  switch (m_pump.getState()) {
+    case PumpState::DISABLE:
+      m_indicator->enable();
+      break;
+    case PumpState::ENABLE:
+      break;
+    case PumpState::ERROR:
+      delete m_indicator;
+      m_indicator = new ErrorCodeIndicator(2);
+      m_indicator->blink(1);
+      break;
+  }
 }

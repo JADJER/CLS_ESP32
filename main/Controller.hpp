@@ -4,9 +4,15 @@
 
 #pragma once
 
-#include "Bluetooth.hpp"
+#include "Button.hpp"
+#include "Distance.hpp"
 #include "Indicator.hpp"
-#include <esp_err.h>
+#include "Pump.hpp"
+#include "ServerCallback.hpp"
+#include <BLEAdvertisedDevice.h>
+#include <BLECharacteristic.h>
+#include <BLEClient.h>
+#include <BLEServer.h>
 
 class Controller {
  public:
@@ -17,9 +23,23 @@ class Controller {
   [[noreturn]] void spin();
 
  private:
-  Indicator m_indicator;
-  Bluetooth m_bluetooth;
+  Indicator* m_indicator;
+  Button m_button;
+  Pump m_pump;
+  Distance m_distance;
+  BLEServer* m_server;
+  BLEClient* m_client;
+  ServerCallback m_serverCallback;
+  BLECharacteristic* m_settingDistance;
+  BLECharacteristic* m_settingDelay;
+  BLECharacteristic* m_monitorDistance;
+  BLECharacteristic* m_monitorOilLevel;
+  BLERemoteCharacteristic* m_vehicleSpeed;
+  BLERemoteCharacteristic* m_vehicleState;
 
  private:
-  void spinOnce();
+  void connectToServer();
+  void updateCharacteristics();
+  void manualLubricate();
+  void spinPump();
 };

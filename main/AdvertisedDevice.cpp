@@ -13,17 +13,32 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 23.09.22.
+// Created by jadjer on 27.09.22.
 //
 
-#include "Controller.hpp"
+#include "AdvertisedDevice.hpp"
+#include "ServicesUUID.hpp"
 #include <Arduino.h>
+#include <BLEDevice.h>
 
-extern "C" void app_main() {
-  initArduino();
+AdvertisedDevice::AdvertisedDevice() {
+  m_device = nullptr;
+}
 
-//  delay(2000);
+void AdvertisedDevice::onResult(BLEAdvertisedDevice advertisedDevice) {
+  if (not advertisedDevice.haveServiceUUID()) {
+    return;
+  }
 
-  Controller controller;
-  controller.spin();
+  if (not advertisedDevice.isAdvertisingService(serviceAdvertiseUUID)) {
+    return;
+  }
+
+  BLEDevice::getScan()->stop();
+
+  m_device = new BLEAdvertisedDevice(advertisedDevice);
+}
+
+BLEAdvertisedDevice* AdvertisedDevice::getAdvertisedDevice() const {
+  return m_device;
 }

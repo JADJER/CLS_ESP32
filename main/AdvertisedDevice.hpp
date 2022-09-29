@@ -13,48 +13,23 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 23.09.22.
+// Created by jadjer on 27.09.22.
 //
 
 #pragma once
 
-#include <thread>
+#include <BLEAdvertisedDevice.h>
 
-/**
- * @brief
- */
-class Indicator {
+class AdvertisedDevice : public BLEAdvertisedDeviceCallbacks {
  public:
-  explicit Indicator(int pinNum);
-  virtual ~Indicator();
+  AdvertisedDevice();
 
  public:
-  /**
-   * @brief
-   */
-  virtual void enable();
+  void onResult(BLEAdvertisedDevice advertisedDevice) override;
 
-  /**
-   * @brief
-   */
-  virtual void disable();
+ public:
+  [[nodiscard]] BLEAdvertisedDevice* getAdvertisedDevice() const;
 
-  /**
-   * @brief
-   * @param delayMs
-   */
-  virtual void blink(int delayMs);
-
- protected:
-  int m_pinNum;
-  int m_taskValue;
-  bool m_threadEnable;
-  std::thread m_thread;
-
-  protected:
-  /**
-   * @brief
-   * @param delayMs
-   */
-  virtual void blinkTask() = 0;
+ private:
+  BLEAdvertisedDevice* m_device;
 };

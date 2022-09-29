@@ -13,48 +13,24 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 23.09.22.
+// Created by jadjer on 28.09.22.
 //
 
 #pragma once
 
-#include <thread>
+#include <BLECharacteristic.h>
+#include <Preferences.h>
 
-/**
- * @brief
- */
-class Indicator {
+class SetDelayCallback : public BLECharacteristicCallbacks {
  public:
-  explicit Indicator(int pinNum);
-  virtual ~Indicator();
+  SetDelayCallback();
+  ~SetDelayCallback() override;
 
  public:
-  /**
-   * @brief
-   */
-  virtual void enable();
+  void onRead(BLECharacteristic* pCharacteristic) override;
+  void onWrite(BLECharacteristic* pCharacteristic) override;
 
-  /**
-   * @brief
-   */
-  virtual void disable();
-
-  /**
-   * @brief
-   * @param delayMs
-   */
-  virtual void blink(int delayMs);
-
- protected:
-  int m_pinNum;
-  int m_taskValue;
-  bool m_threadEnable;
-  std::thread m_thread;
-
-  protected:
-  /**
-   * @brief
-   * @param delayMs
-   */
-  virtual void blinkTask() = 0;
+ private:
+  Preferences m_preferences;
+  std::string m_preferenceKey;
 };

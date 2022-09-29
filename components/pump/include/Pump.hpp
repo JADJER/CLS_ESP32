@@ -18,43 +18,51 @@
 
 #pragma once
 
+#include <esp_err.h>
 #include <thread>
+
+enum PumpState {
+  ERROR,
+  DISABLE,
+  ENABLE
+};
 
 /**
  * @brief
  */
-class Indicator {
+class Pump {
  public:
-  explicit Indicator(int pinNum);
-  virtual ~Indicator();
+  explicit Pump(int controlPin, int feedbackPin);
+  ~Pump();
 
  public:
   /**
    * @brief
    */
-  virtual void enable();
+  void enable(int delay);
 
   /**
    * @brief
    */
-  virtual void disable();
+  void disable();
 
+ public:
   /**
    * @brief
-   * @param delayMs
+   * @return
    */
-  virtual void blink(int delayMs);
+  [[nodiscard]] PumpState getState() const;
+
+ public:
+  /**
+   * @brief
+   */
+  void spinOnce();
 
  protected:
-  int m_pinNum;
-  int m_taskValue;
-  bool m_threadEnable;
-  std::thread m_thread;
-
-  protected:
-  /**
-   * @brief
-   * @param delayMs
-   */
-  virtual void blinkTask() = 0;
+  int m_delay;
+  int m_controlPin;
+  int m_feedbackPin;
+  PumpState m_state;
+  unsigned long m_startTime;
 };

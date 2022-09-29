@@ -13,48 +13,27 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 23.09.22.
+// Created by jadjer on 28.09.22.
 //
 
 #pragma once
 
-#include <thread>
+#include <mutex>
 
-/**
- * @brief
- */
-class Indicator {
+class Distance {
  public:
-  explicit Indicator(int pinNum);
-  virtual ~Indicator();
+  Distance();
+  ~Distance();
 
  public:
-  /**
-   * @brief
-   */
-  virtual void enable();
+  void updateSpeed(uint8_t speed);
 
-  /**
-   * @brief
-   */
-  virtual void disable();
+ public:
+  float getDistance();
 
-  /**
-   * @brief
-   * @param delayMs
-   */
-  virtual void blink(int delayMs);
-
- protected:
-  int m_pinNum;
-  int m_taskValue;
-  bool m_threadEnable;
-  std::thread m_thread;
-
-  protected:
-  /**
-   * @brief
-   * @param delayMs
-   */
-  virtual void blinkTask() = 0;
+ private:
+  float m_speed;
+  float m_distance;
+  std::mutex m_mutex;
+  unsigned long m_lastUpdate;
 };
