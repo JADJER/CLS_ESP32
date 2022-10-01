@@ -23,6 +23,8 @@ class Controller {
   [[noreturn]] void spin();
 
  private:
+  float m_maxDistance;
+  int m_enableDelay;
   Indicator* m_indicator;
   Button m_button;
   Pump m_pump;
@@ -32,6 +34,7 @@ class Controller {
   ServerCallback m_serverCallback;
   BLECharacteristic* m_settingDistance;
   BLECharacteristic* m_settingDelay;
+  BLECharacteristic* m_monitorState;
   BLECharacteristic* m_monitorDistance;
   BLECharacteristic* m_monitorOilLevel;
   BLERemoteCharacteristic* m_vehicleSpeed;

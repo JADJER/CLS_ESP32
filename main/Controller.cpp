@@ -6,7 +6,6 @@
 #include "AdvertisedDevice.hpp"
 #include "BLE2901.hpp"
 #include "BlinkIndicator.hpp"
-#include "ErrorCodeIndicator.hpp"
 #include "ServicesUUID.hpp"
 #include "SetDelayCallback.hpp"
 #include "SetDistanceCallback.hpp"
@@ -14,8 +13,11 @@
 #include <BLE2902.h>
 #include <BLEDevice.h>
 
-Controller::Controller() : m_indicator(new BlinkIndicator(2)), m_button(0), m_pump(16, 17) {
+Controller::Controller() : m_indicator(new BlinkIndicator(2)), m_button(0), m_pump(17, 3) {
   BLEDevice::init("CLS");
+
+  m_maxDistance = 500;
+  m_enableDelay = 5000;
 
   log_i("Bluetooth server start ...");
   m_indicator->blink(100);
@@ -40,7 +42,11 @@ Controller::Controller() : m_indicator(new BlinkIndicator(2)), m_button(0), m_pu
   }
 
   {
-    auto service = m_server->createService(serviceMonitorUUID, 11);
+    auto service = m_server->createService(serviceMonitorUUID, 16);
+
+    m_monitorState = service->createCharacteristic(monitorStateUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+    m_monitorState->addDescriptor(new BLE2901("State"));
+    m_monitorState->addDescriptor(new BLE2902());
 
     m_monitorDistance = service->createCharacteristic(monitorDistanceUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
     m_monitorDistance->addDescriptor(new BLE2901("Distance"));
@@ -62,6 +68,8 @@ Controller::Controller() : m_indicator(new BlinkIndicator(2)), m_button(0), m_pu
 
   log_i("Initialize done");
   m_indicator->enable();
+
+  m_monitorState->setValue("Ready");
 }
 
 Controller::~Controller() = default;
@@ -71,7 +79,9 @@ Controller::~Controller() = default;
     if (not m_client->isConnected()) { connectToServer(); }
     if (m_serverCallback.isConnected()) { updateCharacteristics(); }
     if (m_button.isPressed()) { manualLubricate(); }
-    if (m_pump.getState() != PumpState::ERROR) { spinPump(); }
+    if (m_distance.getDistance() >= m_maxDistance) { m_pump.enable(m_enableDelay); }
+
+    spinPump();
 
     delay(100);
   }
@@ -138,6 +148,24 @@ void Controller::connectToServer() {
 void Controller::updateCharacteristics() {
   int oilLevel = 100;
   float distance = m_distance.getDistance();
+  PumpState state = m_pump.getState();
+
+  switch (state) {
+    case PumpState::DISABLE:
+      m_monitorState->setValue("Disabled");
+      m_monitorState->notify();
+      break ;
+
+    case PumpState::ENABLE:
+      m_monitorState->setValue("Enabled");
+      m_monitorState->notify();
+      break ;
+
+    case PumpState::ERROR:
+      m_monitorState->setValue("Error");
+      m_monitorState->notify();
+      break ;
+  }
 
   m_monitorDistance->setValue(distance);
   m_monitorDistance->notify();
@@ -147,8 +175,7 @@ void Controller::updateCharacteristics() {
 }
 
 void Controller::manualLubricate() {
-  m_indicator->blink(500);
-  m_pump.enable(2000);
+  m_pump.enable(m_enableDelay);
 
   m_button.resetState();
 }
@@ -156,16 +183,18 @@ void Controller::manualLubricate() {
 void Controller::spinPump() {
   m_pump.spinOnce();
 
-  switch (m_pump.getState()) {
+  auto state = m_pump.getState();
+  switch (state) {
     case PumpState::DISABLE:
       m_indicator->enable();
-      break;
+      break ;
+
     case PumpState::ENABLE:
-      break;
+      m_indicator->blink(500);
+      break ;
+
     case PumpState::ERROR:
-      delete m_indicator;
-      m_indicator = new ErrorCodeIndicator(2);
-      m_indicator->blink(1);
-      break;
+      m_indicator->disable();
+      break ;
   }
 }

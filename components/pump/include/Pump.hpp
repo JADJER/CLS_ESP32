@@ -65,4 +65,7 @@ class Pump {
   int m_feedbackPin;
   PumpState m_state;
   unsigned long m_startTime;
+
+ private:
+  bool getFeedback();
 };

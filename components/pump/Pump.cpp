@@ -24,7 +24,7 @@ Pump::Pump(int controlPin, int feedbackPin) {
   m_startTime = 0;
 
   pinMode(m_controlPin, OUTPUT);
-  pinMode(m_feedbackPin, INPUT_PULLDOWN);
+  pinMode(m_feedbackPin, INPUT_PULLUP);
 }
 
 Pump::~Pump() = default;
@@ -36,6 +36,8 @@ void Pump::enable(int delay) {
   m_state = PumpState::ENABLE;
 
   digitalWrite(m_controlPin, HIGH);
+
+  getFeedback();
 
   m_startTime = millis();
 }
@@ -55,16 +57,22 @@ PumpState Pump::getState() const {
 void Pump::spinOnce() {
   if (m_state != PumpState::ENABLE) { return; }
 
-  auto feedback = digitalRead(m_feedbackPin);
-  if (feedback == LOW) {
-    disable();
-    m_state = PumpState::ERROR;
-    return;
-  }
+  getFeedback();
 
   auto currentTime = millis();
   auto diffTime = currentTime - m_startTime;
   if (diffTime > m_delay) {
     disable();
   }
+}
+
+bool Pump::getFeedback() {
+  auto feedback = digitalRead(m_feedbackPin);
+  if (feedback == HIGH) {
+    disable();
+    m_state = PumpState::ERROR;
+    return false;
+  }
+
+  return true;
 }
