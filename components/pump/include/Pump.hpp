@@ -44,7 +44,7 @@ class Pump {
   /**
    * @brief
    */
-  void disable();
+  void disable(bool ignoreConsumption = false);
 
  public:
   /**
@@ -65,6 +65,8 @@ class Pump {
   int m_feedbackPin;
   PumpState m_state;
   unsigned long m_startTime;
+  int m_consumptionValue;
+  const int m_consumption;
 
  private:
   bool getFeedback();
