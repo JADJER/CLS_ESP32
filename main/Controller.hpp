@@ -7,6 +7,7 @@
 #include "Button.hpp"
 #include "Distance.hpp"
 #include "Indicator.hpp"
+#include "Power.hpp"
 #include "Pump.hpp"
 #include "ServerCallback.hpp"
 #include <BLEAdvertisedDevice.h>
@@ -25,22 +26,23 @@ class Controller {
  private:
   float m_maxDistance;
   int m_enableDelay;
-  Indicator* m_indicator;
+  int m_speed;
   Button m_button;
+  Power m_power;
   Pump m_pump;
   Distance m_distance;
   BLEServer* m_server;
   BLEClient* m_client;
+  Indicator* m_indicator;
   ServerCallback m_serverCallback;
   BLECharacteristic* m_settingDistance;
   BLECharacteristic* m_settingDelay;
   BLECharacteristic* m_monitorState;
   BLECharacteristic* m_monitorDistance;
-  BLECharacteristic* m_monitorOilLevel;
   BLERemoteCharacteristic* m_vehicleSpeed;
-  BLERemoteCharacteristic* m_vehicleState;
 
  private:
+  void sleep();
   void connectToServer();
   void updateCharacteristics();
   void manualLubricate();

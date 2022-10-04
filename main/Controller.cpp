@@ -13,11 +13,14 @@
 #include <BLE2902.h>
 #include <BLEDevice.h>
 
-Controller::Controller() : m_indicator(new BlinkIndicator(2)), m_button(0), m_pump(17, 3) {
+Controller::Controller() : m_button(0), m_power(32), m_pump(17) {
   BLEDevice::init("CLS");
 
+  m_speed = 0;
+  m_indicator = new BlinkIndicator(2);
   m_maxDistance = 500;
   m_enableDelay = 5000;
+  m_vehicleSpeed = nullptr;
 
   log_i("Bluetooth server start ...");
   m_indicator->blink(100);
@@ -42,7 +45,7 @@ Controller::Controller() : m_indicator(new BlinkIndicator(2)), m_button(0), m_pu
   }
 
   {
-    auto service = m_server->createService(serviceMonitorUUID, 16);
+    auto service = m_server->createService(serviceMonitorUUID, 11);
 
     m_monitorState = service->createCharacteristic(monitorStateUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
     m_monitorState->addDescriptor(new BLE2901("State"));
@@ -51,10 +54,6 @@ Controller::Controller() : m_indicator(new BlinkIndicator(2)), m_button(0), m_pu
     m_monitorDistance = service->createCharacteristic(monitorDistanceUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
     m_monitorDistance->addDescriptor(new BLE2901("Distance"));
     m_monitorDistance->addDescriptor(new BLE2902());
-
-    m_monitorOilLevel = service->createCharacteristic(monitorOilLevelUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-    m_monitorOilLevel->addDescriptor(new BLE2901("Oil Level"));
-    m_monitorOilLevel->addDescriptor(new BLE2902());
 
     service->start();
   }
@@ -80,11 +79,19 @@ Controller::~Controller() = default;
     if (m_serverCallback.isConnected()) { updateCharacteristics(); }
     if (m_button.isPressed()) { manualLubricate(); }
     if (m_distance.getDistance() >= m_maxDistance) { m_pump.enable(m_enableDelay); }
+    if (m_speed <= 0) { m_pump.pause(); }
+    if (m_speed > 0) { m_pump.unpause(); }
+    if (not m_power.isEnabled()) { sleep(); }
 
     spinPump();
 
     delay(100);
   }
+}
+
+void Controller::sleep() {
+  if (m_pump.isEnabled()) { return; }
+  m_power.sleep();
 }
 
 void Controller::connectToServer() {
@@ -122,61 +129,38 @@ void Controller::connectToServer() {
     return;
   }
 
-  m_vehicleState = serviceVehicle->getCharacteristic(vehicleStateUUID);
-  if (m_vehicleState == nullptr or not m_vehicleState->canNotify()) {
-    m_client->disconnect();
-    return;
-  }
-
   m_vehicleSpeed->registerForNotify([=](auto characteristic, uint8_t const* data, size_t length, bool isNotify) {
     if (not isNotify) { return; }
     if (length == 0) { return; }
 
-    int speed = data[0];
-
-    m_distance.updateSpeed(speed);
-  });
-
-  m_vehicleState->registerForNotify([=](auto, uint8_t const* data, size_t length, bool isNotify) {
-    if (not isNotify) { return; }
-    if (length == 0) { return; }
-
-    int state = data[0];
+    m_speed = data[0];
+    m_distance.updateSpeed(m_speed);
   });
 }
 
 void Controller::updateCharacteristics() {
-  int oilLevel = 100;
-  float distance = m_distance.getDistance();
-  PumpState state = m_pump.getState();
+  auto state = m_pump.getState();
+  auto distance = m_distance.getDistance();
 
   switch (state) {
-    case PumpState::DISABLE:
-      m_monitorState->setValue("Disabled");
-      m_monitorState->notify();
-      break ;
-
     case PumpState::ENABLE:
       m_monitorState->setValue("Enabled");
-      m_monitorState->notify();
-      break ;
-
-    case PumpState::ERROR:
-      m_monitorState->setValue("Error");
-      m_monitorState->notify();
-      break ;
+      break;
+    case PumpState::PAUSE:
+      m_monitorState->setValue("Paused");
+      break;
+    case PumpState::DISABLE:
+      m_monitorState->setValue("Disabled");
+      break;
   }
+  m_monitorState->notify();
 
   m_monitorDistance->setValue(distance);
   m_monitorDistance->notify();
-
-  m_monitorOilLevel->setValue(oilLevel);
-  m_monitorOilLevel->notify();
 }
 
 void Controller::manualLubricate() {
   m_pump.enable(m_enableDelay);
-
   m_button.resetState();
 }
 
@@ -185,16 +169,14 @@ void Controller::spinPump() {
 
   auto state = m_pump.getState();
   switch (state) {
-    case PumpState::DISABLE:
-      m_indicator->enable();
-      break ;
-
     case PumpState::ENABLE:
       m_indicator->blink(500);
-      break ;
-
-    case PumpState::ERROR:
-      m_indicator->disable();
-      break ;
+      break;
+    case PumpState::PAUSE:
+      m_indicator->blink(1000);
+      break;
+    case PumpState::DISABLE:
+      m_indicator->enable();
+      break;
   }
 }

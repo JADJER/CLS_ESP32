@@ -22,9 +22,9 @@
 #include <thread>
 
 enum PumpState {
-  ERROR,
+  ENABLE,
+  PAUSE,
   DISABLE,
-  ENABLE
 };
 
 /**
@@ -32,8 +32,33 @@ enum PumpState {
  */
 class Pump {
  public:
-  explicit Pump(int controlPin, int feedbackPin);
+  explicit Pump(int controlPin);
   ~Pump();
+
+ public:
+  /**
+   * @brief
+   * @return
+   */
+  [[nodiscard]] PumpState getState() const;
+
+  /**
+   * @brief
+   * @return
+   */
+  [[nodiscard]] bool isEnabled() const;
+
+  /**
+   * @brief
+   * @return
+   */
+  [[nodiscard]] bool isPaused() const;
+
+  /**
+   * @brief
+   * @return
+   */
+  [[nodiscard]] bool isDisabled() const;
 
  public:
   /**
@@ -44,14 +69,22 @@ class Pump {
   /**
    * @brief
    */
-  void disable(bool ignoreConsumption = false);
+  void enable();
 
- public:
   /**
    * @brief
-   * @return
    */
-  [[nodiscard]] PumpState getState() const;
+  void disable();
+
+  /**
+   * @brief
+   */
+  void pause();
+
+  /**
+   * @brief
+   */
+  void unpause();
 
  public:
   /**
@@ -62,12 +95,6 @@ class Pump {
  protected:
   int m_delay;
   int m_controlPin;
-  int m_feedbackPin;
   PumpState m_state;
   unsigned long m_startTime;
-  int m_consumptionValue;
-  const int m_consumption;
-
- private:
-  bool getFeedback();
 };

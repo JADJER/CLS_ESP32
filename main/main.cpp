@@ -22,8 +22,6 @@
 extern "C" void app_main() {
   initArduino();
 
-//  delay(2000);
-
   Controller controller;
   controller.spin();
 }

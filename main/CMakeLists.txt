@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(SOURCES
         main.cpp
         BLE2901.cpp
-        Distance.cpp
         Controller.cpp
         ServerCallback.cpp
         AdvertisedDevice.cpp
@@ -16,6 +15,8 @@ set(COMPONENTS
         arduino
         indicator
         button
-        pump)
+        pump
+        distance
+        externalPower)
 
 idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS . REQUIRES ${COMPONENTS})

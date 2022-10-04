@@ -16,72 +16,82 @@
 
 #include <Arduino.h>
 
-Pump::Pump(int controlPin, int feedbackPin) : m_consumption(80) {
+Pump::Pump(int controlPin) {
   m_delay = 5000;
   m_state = PumpState::DISABLE;
   m_controlPin = controlPin;
-  m_feedbackPin = feedbackPin;
   m_startTime = 0;
-  m_consumptionValue = 0;
 
   pinMode(m_controlPin, OUTPUT);
-  pinMode(m_feedbackPin, INPUT_PULLUP);
 }
 
 Pump::~Pump() = default;
-
-void Pump::enable(int delay) {
-  if (m_state != PumpState::DISABLE) { return; }
-
-  m_delay = delay;
-  m_state = PumpState::ENABLE;
-
-  digitalWrite(m_controlPin, HIGH);
-
-  getFeedback();
-
-  m_startTime = millis();
-}
-
-void Pump::disable(bool ignoreConsumption) {
-  if (m_state != PumpState::ENABLE) { return; }
-
-  m_state = PumpState::DISABLE;
-
-  digitalWrite(m_controlPin, LOW);
-
-  if (ignoreConsumption) { return; }
-
-  auto currentTime = millis();
-  auto differentTime = currentTime - m_startTime;
-  auto differentTimeM = differentTime / 60000;
-
-  m_consumptionValue = m_consumption * differentTimeM;
-}
 
 PumpState Pump::getState() const {
   return m_state;
 }
 
-void Pump::spinOnce() {
-  if (m_state != PumpState::ENABLE) { return; }
+bool Pump::isEnabled() const {
+  return m_state == PumpState::ENABLE;
+}
 
-  getFeedback();
+bool Pump::isPaused() const {
+  return m_state == PumpState::PAUSE;
+}
+
+bool Pump::isDisabled() const {
+  return m_state == PumpState::DISABLE;
+}
+
+void Pump::enable(int delay) {
+  m_delay = delay;
+  enable();
+}
+
+void Pump::enable() {
+  if (isEnabled()) { return; }
+
+  m_state = PumpState::ENABLE;
+
+  digitalWrite(m_controlPin, HIGH);
+
+  m_startTime = millis();
+
+  log_i("Pump enabled");
+}
+
+void Pump::disable() {
+  if (isDisabled()) { return; }
+
+  m_state = PumpState::DISABLE;
+
+  digitalWrite(m_controlPin, LOW);
+
+  log_i("Pump disabled");
+}
+
+void Pump::pause() {
+  if (isDisabled()) { return; }
+
+  disable();
+
+  m_state = PumpState::PAUSE;
+
+  log_i("Pump paused");
+}
+
+void Pump::unpause() {
+  if (not isPaused()) { return; }
+
+  enable();
+}
+
+void Pump::spinOnce() {
+  if (isDisabled()) { return; }
 
   auto currentTime = millis();
   auto diffTime = currentTime - m_startTime;
   if (diffTime > m_delay) {
     disable();
   }
-}
-
-bool Pump::getFeedback() {
-  auto feedback = digitalRead(m_feedbackPin);
-  if (feedback == HIGH) {
-    disable(true);
-    m_state = PumpState::ERROR;
-    return false;
-  }
-
-  return true;
 }
