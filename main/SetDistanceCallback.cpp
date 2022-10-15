@@ -22,10 +22,11 @@
 
 SetDistanceCallback::SetDistanceCallback() : BLECharacteristicCallbacks() {
   m_preferences.begin("settings");
+  m_defaultValue = 500;
   m_preferenceKey = "distance";
 
   if (not m_preferences.isKey(m_preferenceKey.c_str())) {
-    m_preferences.putUShort(m_preferenceKey.c_str(), 500);
+    m_preferences.putUInt(m_preferenceKey.c_str(), m_defaultValue);
   }
 }
 
@@ -33,24 +34,34 @@ SetDistanceCallback::~SetDistanceCallback() {
   m_preferences.end();
 }
 
+float SetDistanceCallback::getValue() {
+  uint32_t value = getValueFromPreference();
+  return static_cast<float>(value);
+}
+
 void SetDistanceCallback::onRead(BLECharacteristic* pCharacteristic) {
-  uint16_t value = m_preferences.getUShort(m_preferenceKey.c_str());
+  uint32_t value = getValueFromPreference();
   pCharacteristic->setValue(value);
   log_i("Read value from preference");
 }
 
 void SetDistanceCallback::onWrite(BLECharacteristic* pCharacteristic) {
   auto length = pCharacteristic->getLength();
-  if (length != 2) { return; }
+  if (length > 4) { return; }
 
   auto data = pCharacteristic->getData();
 
-  uint16_t value = 0;
+  uint32_t value = 0;
 
   for (size_t i = 0; i < length; i++) {
     value |= data[i] << (8 * i);
   }
 
-  m_preferences.putUShort(m_preferenceKey.c_str(), value);
+  m_preferences.putUInt(m_preferenceKey.c_str(), value);
   log_i("Write distance %d", value);
+}
+
+uint32_t SetDistanceCallback::getValueFromPreference() {
+  uint32_t value = m_preferences.getUInt(m_preferenceKey.c_str(), m_defaultValue);
+  return value;
 }

@@ -22,10 +22,11 @@
 
 SetDelayCallback::SetDelayCallback() : BLECharacteristicCallbacks() {
   m_preferences.begin("settings");
+  m_defaultValue = 20000;
   m_preferenceKey = "delay";
 
   if (not m_preferences.isKey(m_preferenceKey.c_str())) {
-    m_preferences.putUChar(m_preferenceKey.c_str(), 10);
+    m_preferences.putUInt(m_preferenceKey.c_str(), m_defaultValue);
   }
 }
 
@@ -33,24 +34,34 @@ SetDelayCallback::~SetDelayCallback() {
   m_preferences.end();
 }
 
+int SetDelayCallback::getValue() {
+  uint32_t value = getValueFromPreference();
+  return static_cast<int>(value);
+}
+
 void SetDelayCallback::onRead(BLECharacteristic* pCharacteristic) {
-  uint16_t value = m_preferences.getUChar(m_preferenceKey.c_str());
+  uint32_t value = getValueFromPreference();
   pCharacteristic->setValue(value);
   log_i("Read value from preference");
 }
 
 void SetDelayCallback::onWrite(BLECharacteristic* pCharacteristic) {
   auto length = pCharacteristic->getLength();
-  if (length != 1) { return; }
+  if (length > 4) { return; }
 
   auto data = pCharacteristic->getData();
 
-  uint16_t value = 0;
+  uint32_t value = 0;
 
   for (size_t i = 0; i < length; i++) {
     value |= data[i] << (8 * i);
   }
 
-  m_preferences.putUChar(m_preferenceKey.c_str(), value);
-  log_i("Write distance %d", value);
+  m_preferences.putUInt(m_preferenceKey.c_str(), value);
+  log_i("Write delay %d", value);
+}
+
+uint32_t SetDelayCallback::getValueFromPreference() {
+  uint32_t value = m_preferences.getUInt(m_preferenceKey.c_str(), m_defaultValue);
+  return value;
 }

@@ -19,6 +19,7 @@
 #pragma once
 
 #include <mutex>
+#include <Preferences.h>
 
 class Distance {
  public:
@@ -26,14 +27,17 @@ class Distance {
   ~Distance();
 
  public:
-  void updateSpeed(uint8_t speed);
-
- public:
   float getDistance();
+  void updateSpeed(uint8_t speed);
+  void resetDistance();
 
  private:
   float m_speed;
   float m_distance;
   std::mutex m_mutex;
+  Preferences m_preferences;
   unsigned long m_lastUpdate;
+
+ private:
+  void saveDistance(float distance);
 };

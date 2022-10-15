@@ -18,9 +18,9 @@ Controller::Controller() : m_button(0), m_power(32), m_pump(17) {
 
   m_speed = 0;
   m_indicator = new BlinkIndicator(2);
-  m_maxDistance = 500;
-  m_enableDelay = 5000;
   m_vehicleSpeed = nullptr;
+  m_setDelayCallback = new SetDelayCallback();
+  m_setDistanceCallback = new SetDistanceCallback();
 
   log_i("Bluetooth server start ...");
   m_indicator->blink(100);
@@ -33,13 +33,13 @@ Controller::Controller() : m_button(0), m_power(32), m_pump(17) {
   {
     auto service = m_server->createService(serviceSettingsUUID, 9);
 
-    m_settingDistance = service->createCharacteristic(settingDistanceUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
-    m_settingDistance->setCallbacks(new SetDistanceCallback());
-    m_settingDistance->addDescriptor(new BLE2901("Minimal Distance"));
-
     m_settingDelay = service->createCharacteristic(settingDelayUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
-    m_settingDelay->setCallbacks(new SetDelayCallback());
-    m_settingDelay->addDescriptor(new BLE2901("Lubricate Time"));
+    m_settingDelay->setCallbacks(m_setDelayCallback);
+    m_settingDelay->addDescriptor(new BLE2901("Lubricate Time MS"));
+
+    m_settingDistance = service->createCharacteristic(settingDistanceUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+    m_settingDistance->setCallbacks(m_setDistanceCallback);
+    m_settingDistance->addDescriptor(new BLE2901("Minimal Distance KM"));
 
     service->start();
   }
@@ -78,14 +78,18 @@ Controller::~Controller() = default;
     if (not m_client->isConnected()) { connectToServer(); }
     if (m_serverCallback.isConnected()) { updateCharacteristics(); }
     if (m_button.isPressed()) { manualLubricate(); }
-    if (m_distance.getDistance() >= m_maxDistance) { m_pump.enable(m_enableDelay); }
+    if (m_distance.getDistance() > m_setDistanceCallback->getValue()) { m_pump.enable(m_setDelayCallback->getValue()); }
+    if (m_distance.getDistance() > m_setDistanceCallback->getValue()) { m_distance.resetDistance(); }
     if (m_speed <= 0) { m_pump.pause(); }
     if (m_speed > 0) { m_pump.unpause(); }
     if (not m_power.isEnabled()) { sleep(); }
 
+    log_i("Min distance: %f, enable delay: %d", m_setDistanceCallback->getValue(), m_setDelayCallback->getValue());
+    log_i("Speed: %d, Distance: %f", m_speed, m_distance.getDistance());
+
     spinPump();
 
-    delay(100);
+    delay(1000);
   }
 }
 
@@ -160,7 +164,7 @@ void Controller::updateCharacteristics() {
 }
 
 void Controller::manualLubricate() {
-  m_pump.enable(m_enableDelay);
+  m_pump.enable(m_setDelayCallback->getValue());
   m_button.resetState();
 }
 

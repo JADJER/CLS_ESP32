@@ -10,6 +10,8 @@
 #include "Power.hpp"
 #include "Pump.hpp"
 #include "ServerCallback.hpp"
+#include "SetDelayCallback.hpp"
+#include "SetDistanceCallback.hpp"
 #include <BLEAdvertisedDevice.h>
 #include <BLECharacteristic.h>
 #include <BLEClient.h>
@@ -24,8 +26,6 @@ class Controller {
   [[noreturn]] void spin();
 
  private:
-  float m_maxDistance;
-  int m_enableDelay;
   int m_speed;
   Button m_button;
   Power m_power;
@@ -35,6 +35,8 @@ class Controller {
   BLEClient* m_client;
   Indicator* m_indicator;
   ServerCallback m_serverCallback;
+  SetDelayCallback * m_setDelayCallback;
+  SetDistanceCallback * m_setDistanceCallback;
   BLECharacteristic* m_settingDistance;
   BLECharacteristic* m_settingDelay;
   BLECharacteristic* m_monitorState;

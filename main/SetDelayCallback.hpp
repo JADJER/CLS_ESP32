@@ -27,10 +27,17 @@ class SetDelayCallback : public BLECharacteristicCallbacks {
   ~SetDelayCallback() override;
 
  public:
+  int getValue();
+
+ public:
   void onRead(BLECharacteristic* pCharacteristic) override;
   void onWrite(BLECharacteristic* pCharacteristic) override;
 
  private:
+  uint32_t m_defaultValue;
   Preferences m_preferences;
   std::string m_preferenceKey;
+
+ private:
+  uint32_t getValueFromPreference();
 };

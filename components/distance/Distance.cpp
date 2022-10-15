@@ -22,11 +22,24 @@
 
 Distance::Distance() {
   m_speed = 0;
-  m_distance = 0;
   m_lastUpdate = millis();
+
+  m_preferences.begin("data");
+  if (not m_preferences.isKey("distance")) {
+    m_preferences.putFloat("distance", 0.0f);
+  }
+
+  m_distance = m_preferences.getFloat("distance");
 }
 
-Distance::~Distance() = default;
+Distance::~Distance() {
+  m_preferences.end();
+}
+
+float Distance::getDistance() {
+  std::lock_guard<std::mutex> lock(m_mutex);
+  return m_distance;
+}
 
 void Distance::updateSpeed(uint8_t speed) {
   std::lock_guard<std::mutex> lock(m_mutex);
@@ -39,9 +52,17 @@ void Distance::updateSpeed(uint8_t speed) {
 
   m_distance = m_distance + distance;
   m_lastUpdate = currentTime;
+
+  if (static_cast<int>(m_distance) % 15 == 0) {
+    saveDistance(m_distance);
+  }
 }
 
-float Distance::getDistance() {
-  std::lock_guard<std::mutex> lock(m_mutex);
-  return m_distance;
+void Distance::resetDistance() {
+  m_distance = 0;
+  saveDistance(m_distance);
+}
+
+void Distance::saveDistance(float distance) {
+  m_preferences.putFloat("distance", distance);
 }
