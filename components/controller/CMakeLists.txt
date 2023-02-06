@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.17)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_C_STANDARD 23)
 
 set(SOURCES
-        Power.cpp)
+        controller.c)
 
 set(COMPONENTS
-        driver
-        arduino)
+        driver)
 
 idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS include REQUIRES ${COMPONENTS})

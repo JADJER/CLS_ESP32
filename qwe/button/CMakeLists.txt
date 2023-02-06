@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(SOURCES
         Button.cpp)
 
-set(COMPONENTS
-        arduino)
+set(COMPONENTS)
 
 idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS include REQUIRES ${COMPONENTS})
