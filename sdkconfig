@@ -303,17 +303,23 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
-# External power
-#
-CONFIG_EXTERNAL_POWER_PIN=32
-# CONFIG_EXTERNAL_POWER_PIN_INVERTED is not set
-# end of External power
-
-#
 # External sensor
 #
 CONFIG_EXTERNAL_SENSOR_PIN=32
 # end of External sensor
+
+#
+# Power Manager
+#
+CONFIG_EXTERNAL_POWER_PIN=32
+# CONFIG_EXTERNAL_POWER_PIN_INVERTED is not set
+# end of Power Manager
+
+#
+# Pump
+#
+CONFIG_PUMP_POWER_PIN=17
+# end of Pump
 
 #
 # Compiler options

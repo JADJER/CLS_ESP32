@@ -13,19 +13,21 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 03.02.23.
+// Created by jadjer on 09.02.23.
 //
+
+
+#pragma once
 
 #include <esp_err.h>
 
-#include "pump.h"
-#include "config.h"
-#include "external_power.h"
-#include "controller.h"
-
-void app_main(void) {
-    ESP_ERROR_CHECK(config_init());
-    ESP_ERROR_CHECK(external_power_init());
-    ESP_ERROR_CHECK(pump_init());
-    ESP_ERROR_CHECK(controller_init());
+/**
+ * @namespace Controller
+ */
+namespace Controller {
+    /**
+     * Controller initialization
+     * @return esp_err_t error code
+     */
+    esp_err_t init();
 }

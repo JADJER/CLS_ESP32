@@ -13,11 +13,15 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 06.02.23.
+// Created by jadjer on 09.02.23.
 //
 
-#include "pump.h"
 
-esp_err_t pump_init(void) {
-    return ESP_OK;
+#pragma once
+
+/**
+ * @namespace Configuration
+ */
+namespace Configuration {
+
 }

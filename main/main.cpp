@@ -13,21 +13,31 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 03.02.23.
+// Created by jadjer on 09.02.23.
 //
 
-#include "config.h"
+#include "Pump.hpp"
+#include "Controller.hpp"
+#include "PowerManager.hpp"
 
-#include <stdbool.h>
+#include <esp_task_wdt.h>
 
-static bool init = false;
+constexpr uint32_t watchdogTimeoutMS = 5000;
 
-esp_err_t config_init(void) {
-    if (init) {
-        return ESP_FAIL;
-    }
+void watchdogInit() {
+    esp_task_wdt_config_t wdtConfig = {
+            .timeout_ms = watchdogTimeoutMS,
+            .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,
+            .trigger_panic = true,
+    };
 
-    init = true;
+    esp_task_wdt_init(&wdtConfig);
+}
 
-    return ESP_OK;
+extern "C" void app_main(void) {
+    watchdogInit();
+
+    ESP_ERROR_CHECK(Pump::init());
+    ESP_ERROR_CHECK(PowerManager::init());
+    ESP_ERROR_CHECK(Controller::init());
 }

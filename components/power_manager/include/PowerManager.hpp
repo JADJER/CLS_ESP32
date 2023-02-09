@@ -13,11 +13,27 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 03.02.23.
+// Created by jadjer on 09.02.23.
 //
 
-#include "controller.h"
 
-esp_err_t controller_init(void) {
+#pragma once
 
+#include <esp_err.h>
+
+/**
+ * @namespace PowerManager
+ */
+namespace PowerManager {
+    /**
+     * Power Manager initialization
+     * @return esp_err_t error code
+     */
+    esp_err_t init();
+
+    /**
+     * Check if power is enabled
+     * @return True if enabled. false is disabled
+     */
+    bool isEnabled();
 }

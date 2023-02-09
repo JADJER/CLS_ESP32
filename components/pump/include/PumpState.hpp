@@ -13,15 +13,22 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 03.02.23.
+// Created by jadjer on 09.02.23.
 //
+
 
 #pragma once
 
-#include <esp_err.h>
-
 /**
- * Controller initialize
- * @return Status code
+ * @namespace Pump
  */
-esp_err_t controller_init(void);
+namespace Pump {
+    /**
+     * @enum State
+     */
+    enum State {
+        PUMP_DISABLED,
+        PUMP_ENABLED,
+        PUMP_IN_ERROR,
+    };
+}

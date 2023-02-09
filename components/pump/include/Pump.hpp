@@ -21,4 +21,31 @@
 
 #include <esp_err.h>
 
-esp_err_t pump_init(void);
+#include "PumpState.hpp"
+
+/**
+ * @namespace Pump
+ */
+namespace Pump {
+    /**
+     *
+     * @return
+     */
+    esp_err_t init();
+
+    /**
+     *
+     * @return
+     */
+    State getState();
+
+    /**
+     * Pump enable
+     */
+    void enable();
+
+    /**
+     * Pump disable
+     */
+    void disable();
+}

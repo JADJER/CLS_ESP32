@@ -23,7 +23,7 @@ class Controller {
   ~Controller();
 
  public:
-  [[noreturn]] void spin();
+    [[maybe_unused]] [[noreturn]] void spin();
 
  private:
   int m_speed;

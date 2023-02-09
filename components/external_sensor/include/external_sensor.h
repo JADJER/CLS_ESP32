@@ -22,6 +22,10 @@
 #include <stdbool.h>
 #include <esp_err.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  *
  * @return
@@ -38,3 +42,7 @@ uint8_t extenal_sensor_is_enabled(void);
  *
  */
 //void sleep(void);
+
+#ifdef __cplusplus
+}
+#endif

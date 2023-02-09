@@ -13,12 +13,7 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 03.02.23.
+// Created by jadjer on 09.02.23.
 //
 
-
-#pragma once
-
-#include <esp_err.h>
-
-esp_err_t config_init(void);
+#include "Configuration.hpp"

@@ -1,0 +1,10 @@
+menu "Pump"
+
+    config PUMP_POWER_PIN
+        int "GPIO pump power pin"
+        range 0 36
+        default 17
+        help
+            GPIO pin number to be pump enabled.
+
+endmenu

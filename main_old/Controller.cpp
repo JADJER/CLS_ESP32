@@ -9,6 +9,8 @@
 #include "ServicesUUID.hpp"
 #include "SetDelayCallback.hpp"
 #include "SetDistanceCallback.hpp"
+#include "../components/controller/include/Controller.hpp"
+
 #include <Arduino.h>
 #include <BLE2902.h>
 #include <BLEDevice.h>
@@ -73,7 +75,7 @@ Controller::Controller() : m_button(0), m_power(32), m_pump(17) {
 
 Controller::~Controller() = default;
 
-[[noreturn]] void Controller::spin() {
+[[maybe_unused]] [[noreturn]] void Controller::spin() {
   while (true) {
     if (not m_client->isConnected()) { connectToServer(); }
     if (m_serverCallback.isConnected()) { updateCharacteristics(); }

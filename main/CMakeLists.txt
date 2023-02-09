@@ -1,18 +1,12 @@
 cmake_minimum_required(VERSION 3.17)
 
-set(CMAKE_C_STANDARD 23)
-
 set(SOURCES
-        main.c)
+        main.cpp)
 
 set(COMPONENTS
-#        indicator
-#        button
-#        pump
-#        distance
         pump
-        config
         controller
-        external_power)
+        configuration
+        power_manager)
 
 idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS . REQUIRES ${COMPONENTS})

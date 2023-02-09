@@ -1,4 +1,4 @@
-menu "External power"
+menu "Power Manager"
 
     config EXTERNAL_POWER_PIN
         int "GPIO external power pin"
