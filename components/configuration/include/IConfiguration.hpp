@@ -1,4 +1,4 @@
-// Copyright 2022 Pavel Suprunov
+// Copyright 2023 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,48 +13,24 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 23.09.22.
+// Created by jadjer on 10.02.23.
 //
+
 
 #pragma once
 
-#include <thread>
+#include <memory>
 
-/**
- * @brief
- */
-class Indicator {
- public:
-  explicit Indicator(int pinNum);
-  virtual ~Indicator();
+class IConfiguration {
+public:
+    virtual ~IConfiguration() = default;
 
- public:
-  /**
-   * @brief
-   */
-  virtual void enable();
+public:
+    [[nodiscard]] virtual bool isLubricateFromTimer() const = 0;
+    [[nodiscard]] virtual bool isLubricateFromDistance() const = 0;
 
-  /**
-   * @brief
-   */
-  virtual void disable();
-
-  /**
-   * @brief
-   * @param delayMs
-   */
-  virtual void blink(int delayMs);
-
- protected:
-  int m_pinNum;
-  int m_taskValue;
-  bool m_threadEnable;
-  std::thread m_thread;
-
-  protected:
-  /**
-   * @brief
-   * @param delayMs
-   */
-  virtual void blinkTask() = 0;
+public:
+    [[nodiscard]] virtual uint64_t getLimitDistance() const = 0;
 };
+
+using IConfigurationPtr = std::shared_ptr<IConfiguration>;

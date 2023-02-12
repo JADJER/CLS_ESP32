@@ -1,4 +1,4 @@
-// Copyright 2022 Pavel Suprunov
+// Copyright 2023 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,24 +13,20 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 28.09.22.
+// Created by jadjer on 12.02.23.
 //
+
 
 #pragma once
 
-#include <BLEServer.h>
 
-class ServerCallback : public BLEServerCallbacks {
- public:
-  ServerCallback();
+#include <cstdint>
 
- public:
-  void onConnect(BLEServer* server) override;
-  void onDisconnect(BLEServer* server) override;
+class Distance {
+public:
+    Distance();
+    ~Distance();
 
- public:
-  [[nodiscard]] bool isConnected() const;
-
- private:
-  bool m_isConnected;
+public:
+    uint64_t getDistance() const;
 };

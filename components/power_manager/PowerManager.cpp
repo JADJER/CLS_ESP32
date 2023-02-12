@@ -18,52 +18,44 @@
 
 #include "PowerManager.hpp"
 
-#include <driver/gpio.h>
 #include <esp_log.h>
+#include <esp_sleep.h>
 
-constexpr auto tag = "power_manager";
-constexpr auto powerPin = static_cast<gpio_num_t>(CONFIG_EXTERNAL_POWER_PIN);
-constexpr auto powerPinSel = (1ULL << powerPin);
+constexpr auto tag = "Power manager";
 
-static bool isInit = false;
-
-esp_err_t PowerManager::init() {
-    ESP_LOGI(tag, "==================================================");
-
-    esp_err_t err = ESP_OK;
-
-    if (isInit) {
-        return err;
-    }
-
-    ESP_LOGI(tag, "Initializing...");
+PowerManager::PowerManager() :
+        m_powerPin(static_cast<gpio_num_t>(CONFIG_EXTERNAL_POWER_PIN)),
+        m_powerPinEnableLevel(1) {
 
     gpio_config_t io_conf = {
-            .pin_bit_mask = powerPinSel,
+            .pin_bit_mask = (1ULL << m_powerPin),
             .mode = GPIO_MODE_INPUT,
             .pull_up_en = GPIO_PULLUP_ENABLE,
             .pull_down_en = GPIO_PULLDOWN_DISABLE,
-            .intr_type = GPIO_INTR_ANYEDGE,
+            .intr_type = GPIO_INTR_LOW_LEVEL,
     };
 
-    err = gpio_config(&io_conf);
-    if (err != ESP_OK) {
-        return err;
-    }
+#ifdef CONFIG_EXTERNAL_POWER_PIN_INVERTED
+    m_powerPinEnableLevel = 0;
+#endif
 
-    ESP_LOGI(tag, "Initialized");
-
-    isInit = true;
-    return err;
+    ESP_ERROR_CHECK(gpio_config(&io_conf));
+    ESP_ERROR_CHECK(esp_sleep_enable_ext0_wakeup(m_powerPin, m_powerPinEnableLevel));
 }
 
-bool PowerManager::isEnabled() {
-    if (!isInit) {
-        ESP_LOGW(tag, "Power manager does not init");
-        return false;
+PowerManager::~PowerManager() = default;
+
+bool PowerManager::isEnabled() const {
+    auto powerLevel = gpio_get_level(m_powerPin);
+    if (powerLevel == m_powerPinEnableLevel) {
+        ESP_LOGI(tag, "External power is ENABLED");
+        return true;
     }
 
-    int is_powered = gpio_get_level(powerPin);
+    ESP_LOGI(tag, "External power is DISABLED");
+    return false;
+}
 
-    return !is_powered;
+bool PowerManager::isDisabled() const {
+    return not isEnabled();
 }

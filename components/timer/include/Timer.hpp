@@ -13,84 +13,62 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 06.02.23.
+// Created by jadjer on 10.02.23.
 //
 
 
 #pragma once
 
-#include <esp_err.h>
-#include <driver/gpio.h>
 #include <chrono>
 
 using namespace std::chrono_literals;
 
 /**
- * @enum PumpState
+ * @class Timer
  */
-enum PumpState {
-    PUMP_DISABLED,
-    PUMP_ENABLED,
-    PUMP_IN_ERROR,
-};
-
-/**
- * @class Pump
- */
-class Pump {
+class Timer {
 public:
     /**
-     * @brief Default constructor
+     * Default constructor
      */
-    Pump();
+    Timer();
     /**
-     * @brief Default destructor
+     * Default destructor
      */
-    ~Pump();
+    ~Timer();
 
 public:
     /**
-     * @brief Pump power enable
-     * @param delay Pump disable after time
+     * Timer start
+     * @param delay Timer disable after time
      */
-    void enable(std::chrono::seconds delay = 60s);
+    void start(std::chrono::seconds delay = 60s);
     /**
-     * @brief Pump power disable
+     * Timer stop
      */
-    void disable();
+    void stop();
 
 public:
     /**
-     * @brief Get current pump state
-     * @return PumpState
-     */
-    [[nodiscard]] PumpState getState() const;
-    /**
-     * Is pump enabled
+     * Is timer enabled
      * @return True if enabled, otherwise false
      */
     [[nodiscard]] bool isEnabled() const;
     /**
-     * Is pump disabled
-     * @return True if disabled, otherwise false
+     * Is timer completed
+     * @return True if completed. otherwise false
      */
-    [[nodiscard]] bool isDisabled() const;
-    /**
-     * Is pump in error
-     * @return True if in error, otherwise false
-     */
-    [[nodiscard]] bool inError() const;
+    [[nodiscard]] bool isCompleted() const;
 
 public:
     /**
-     * @brief Pump control logic spin
+     * @brief Timer control logic spin
      */
     void spinOnce();
 
 private:
-    PumpState m_state;
-    gpio_num_t m_controlPin;
-    gpio_num_t m_feedbackPin;
+    bool m_isEnabled;
+    bool m_isCompleted;
     std::chrono::seconds m_delay;
     std::chrono::time_point<std::chrono::system_clock> m_startTime;
 };

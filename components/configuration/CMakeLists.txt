@@ -4,6 +4,6 @@ set(SOURCES
         Configuration.cpp)
 
 set(COMPONENTS
-        driver)
+        nvs_flash)
 
 idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS include REQUIRES ${COMPONENTS})

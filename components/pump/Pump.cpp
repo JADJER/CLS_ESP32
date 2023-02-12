@@ -20,65 +20,89 @@
 
 #include <driver/gpio.h>
 #include <esp_log.h>
+#include <chrono>
 
-constexpr auto tag = "pump";
-constexpr auto pumpPin = static_cast<gpio_num_t>(CONFIG_PUMP_POWER_PIN);
-constexpr auto pumpPinSel = (1ULL << pumpPin);
+constexpr auto tag = "Pump";
 
-static bool isInit = false;
-
-esp_err_t Pump::init() {
-    ESP_LOGI(tag, "==================================================");
-
-    esp_err_t err = ESP_OK;
-
-    if (isInit) {
-        return err;
-    }
-
-    ESP_LOGI(tag, "Initializing...");
+Pump::Pump() :
+        m_state(PumpState::PUMP_DISABLED),
+        m_controlPin(static_cast<gpio_num_t>(CONFIG_PUMP_CONTROL_PIN)),
+        m_feedbackPin(static_cast<gpio_num_t>(CONFIG_PUMP_FEEDBACK_PIN)),
+        m_delay(60s),
+        m_startTime(std::chrono::system_clock::now()) {
 
     gpio_config_t ioConf = {
-            .pin_bit_mask = pumpPinSel,
+            .pin_bit_mask = (1ULL << m_controlPin),
             .mode = GPIO_MODE_OUTPUT,
             .pull_up_en = GPIO_PULLUP_DISABLE,
             .pull_down_en = GPIO_PULLDOWN_DISABLE,
             .intr_type = GPIO_INTR_DISABLE,
     };
 
-    err = gpio_config(&ioConf);
-    if (err != ESP_OK) {
-        return err;
-    }
-
-    ESP_LOGI(tag, "Initialized");
-
-    isInit = true;
-    return err;
+    ESP_ERROR_CHECK(gpio_config(&ioConf));
 }
 
-Pump::State Pump::getState() {
-    if (not isInit) {
-        ESP_LOGW(tag, "Pump does not init");
-    }
+Pump::~Pump() = default;
 
-    return Pump::PUMP_IN_ERROR;
+[[maybe_unused]] PumpState Pump::getState() const {
+    return m_state;
 }
 
-void Pump::enable() {
-    if (not isInit) {
-        ESP_LOGW(tag, "Pump does not init");
+bool Pump::isEnabled() const {
+    return m_state == PUMP_ENABLED;
+}
+
+bool Pump::isDisabled() const {
+    return m_state == PUMP_DISABLED;
+}
+
+bool Pump::inError() const {
+    return m_state == PUMP_IN_ERROR;
+}
+
+void Pump::enable(std::chrono::seconds delay) {
+    if (m_state != PUMP_DISABLED) { return; }
+
+    m_state = PUMP_ENABLED;
+    m_delay = delay;
+
+    ESP_ERROR_CHECK(gpio_set_level(m_controlPin, 1));
+    ESP_LOGI(tag, "Is enabled");
+
+#if !CONFIG_PUMP_FEEDBACK_IGNORE
+    auto feedback = gpio_get_level(m_feedbackPin);
+    if (feedback == 0) {
+        disable();
+        m_state = PUMP_IN_ERROR;
         return;
     }
+#endif
 
-    gpio_set_level(pumpPin, true);
+    m_startTime = std::chrono::system_clock::now();
 }
 
 void Pump::disable() {
-    if (not isInit) {
-        ESP_LOGW(tag, "Pump does not init");
-        return;
-    }
+    if (m_state != PUMP_ENABLED) { return; }
 
-    gpio_set_level(pumpPin, false);
+    m_state = PUMP_DISABLED;
+
+    ESP_ERROR_CHECK(gpio_set_level(m_controlPin, 0));
+    ESP_LOGI(tag, "Is disabled");
+}
+
+void Pump::spinOnce() {
+    if (m_state != PUMP_ENABLED) { return; }
+
+
+
+    auto currentTime = std::chrono::system_clock::now();
+    auto diffTime = currentTime - m_startTime;
+    auto endTime = m_delay - diffTime;
+    auto endTimeSec = std::chrono::duration_cast<std::chrono::seconds>(endTime);
+
+    ESP_LOGI(tag, "Pump disabled until %lld second(s)", endTimeSec.count());
+
+    if (endTimeSec.count() <= 0) {
+        disable();
+    }
 }

@@ -16,28 +16,18 @@
 // Created by jadjer on 09.02.23.
 //
 
-#include "Pump.hpp"
 #include "Controller.hpp"
-#include "PowerManager.hpp"
+#include "Configuration.hpp"
 
-#include <esp_task_wdt.h>
+#include <memory>
 
-constexpr uint32_t watchdogTimeoutMS = 5000;
+IConfigurationPtr configuration;
 
-void watchdogInit() {
-    esp_task_wdt_config_t wdtConfig = {
-            .timeout_ms = watchdogTimeoutMS,
-            .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,
-            .trigger_panic = true,
-    };
-
-    esp_task_wdt_init(&wdtConfig);
-}
+std::unique_ptr<Controller> controller;
 
 extern "C" void app_main(void) {
-    watchdogInit();
+    configuration = std::make_unique<Configuration>();
 
-    ESP_ERROR_CHECK(Pump::init());
-    ESP_ERROR_CHECK(PowerManager::init());
-    ESP_ERROR_CHECK(Controller::init());
+    controller = std::make_unique<Controller>(configuration);
+    controller->spin();
 }

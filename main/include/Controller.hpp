@@ -19,16 +19,34 @@
 
 #pragma once
 
-/**
- * @namespace Pump
- */
-namespace Pump {
-    /**
-     * @enum State
-     */
-    enum State {
-        PUMP_DISABLED,
-        PUMP_ENABLED,
-        PUMP_IN_ERROR,
-    };
-}
+#include "IConfiguration.hpp"
+
+#include "Pump.hpp"
+#include "Timer.hpp"
+#include "Distance.hpp"
+#include "PowerManager.hpp"
+#include "Configuration.hpp"
+
+#include <memory>
+
+class Controller {
+public:
+    explicit Controller(IConfigurationPtr const& configuration);
+    ~Controller();
+
+public:
+    void sleep();
+
+public:
+    [[noreturn]] void spin();
+    void spinOnce();
+
+private:
+    IConfigurationPtr m_configuration;
+
+private:
+    std::unique_ptr<Pump> m_pump;
+    std::unique_ptr<Timer> m_timer;
+    std::unique_ptr<Distance> m_distance;
+    std::unique_ptr<PowerManager> m_powerManager;
+};

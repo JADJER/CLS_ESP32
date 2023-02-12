@@ -1,10 +1,23 @@
 menu "Pump"
 
-    config PUMP_POWER_PIN
-        int "GPIO pump power pin"
+    config PUMP_CONTROL_PIN
+        int "GPIO pump control pin"
         range 0 36
         default 17
         help
             GPIO pin number to be pump enabled.
+
+    config PUMP_FEEDBACK_PIN
+        int "GPIO pump feedback pin"
+        range 0 36
+        default 16
+        help
+            GPIO pin number to be pump feedback.
+
+    config PUMP_FEEDBACK_IGNORE
+        bool "GPIO pump feedback pin value ignore"
+        default FALSE
+        help
+            Ignoring the feedback pin value.
 
 endmenu

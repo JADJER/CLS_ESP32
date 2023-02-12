@@ -19,9 +19,19 @@
 
 #pragma once
 
-/**
- * @namespace Configuration
- */
-namespace Configuration {
+#include <esp_err.h>
 
-}
+#include "IConfiguration.hpp"
+
+class Configuration : public IConfiguration {
+public:
+    Configuration();
+    ~Configuration() override;
+
+public:
+    [[nodiscard]] bool isLubricateFromTimer() const override;
+    [[nodiscard]] bool isLubricateFromDistance() const override;
+
+public:
+    uint64_t getLimitDistance() const override;
+};

@@ -20,20 +20,35 @@
 #pragma once
 
 #include <esp_err.h>
+#include <driver/gpio.h>
 
 /**
- * @namespace PowerManager
+ * @class PowerManager
  */
-namespace PowerManager {
+class PowerManager {
+public:
     /**
-     * Power Manager initialization
-     * @return esp_err_t error code
+     * Default constructor
      */
-    esp_err_t init();
+    PowerManager();
+    /**
+     * Default destructor
+     */
+    ~PowerManager();
 
+public:
     /**
      * Check if power is enabled
      * @return True if enabled. false is disabled
      */
-    bool isEnabled();
-}
+    [[nodiscard]] bool isEnabled() const;
+    /**
+     * Check if power is disabled
+     * @return True if disabled. false is enabled
+     */
+    [[nodiscard]] bool isDisabled() const;
+
+private:
+    gpio_num_t m_powerPin;
+    uint8_t m_powerPinEnableLevel;
+};

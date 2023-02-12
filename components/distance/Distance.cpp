@@ -1,4 +1,4 @@
-// Copyright 2022 Pavel Suprunov
+// Copyright 2023 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,23 +13,15 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 26.09.22.
+// Created by jadjer on 12.02.23.
 //
 
-#include "BlinkIndicator.hpp"
+#include "Distance.hpp"
 
-#include <Arduino.h>
+Distance::Distance() = default;
 
-BlinkIndicator::BlinkIndicator(int pinNum) : Indicator(pinNum) {}
+Distance::~Distance() = default;
 
-BlinkIndicator::~BlinkIndicator() = default;
-
-void BlinkIndicator::blinkTask() {
-  while (m_threadEnable) {
-    digitalWrite(m_pinNum, HIGH);
-    delay(m_taskValue);
-
-    digitalWrite(m_pinNum, LOW);
-    delay(m_taskValue);
-  }
+uint64_t Distance::getDistance() const {
+    return 0;
 }
