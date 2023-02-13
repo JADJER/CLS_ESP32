@@ -13,21 +13,27 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 09.02.23.
+// Created by jadjer on 10.02.23.
 //
 
-#include "Controller.hpp"
-#include "configuration/Configuration.hpp"
+
+#pragma once
 
 #include <memory>
+#include <chrono>
 
-IConfigurationPtr configuration;
+class IConfiguration {
+public:
+    virtual ~IConfiguration() = default;
 
-std::unique_ptr<Controller> controller;
+public:
+    [[nodiscard]] virtual bool isLubricateFromTimer() const = 0;
+    [[nodiscard]] virtual bool isLubricateFromDistance() const = 0;
 
-extern "C" void app_main(void) {
-    configuration = std::make_unique<Configuration>();
+public:
+    [[nodiscard]] virtual uint64_t getLimitDistance() const = 0;
+    [[nodiscard]] virtual std::chrono::seconds getPumpTimeoutEnable() const = 0;
+    [[nodiscard]] virtual std::chrono::seconds getPumpTimeoutDisable() const = 0;
+};
 
-    controller = std::make_unique<Controller>(configuration);
-    controller->spin();
-}
+using IConfigurationPtr = std::shared_ptr<IConfiguration>;

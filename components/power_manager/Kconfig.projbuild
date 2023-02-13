@@ -1,0 +1,16 @@
+menu "Power Manager"
+
+    config EXTERNAL_POWER_PIN
+        int "GPIO external power pin"
+        range 0 36
+        default 32
+        help
+            GPIO pin number to be system enabled.
+
+    config EXTERNAL_POWER_PIN_INVERTED
+        bool "Inverted value from external pin?"
+        default TRUE
+        help
+            Inverted value from external power pin.
+
+endmenu

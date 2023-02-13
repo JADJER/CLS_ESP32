@@ -1,4 +1,4 @@
-// Copyright 2022 Pavel Suprunov
+// Copyright 2023 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,59 +12,76 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "Pump.hpp"
+//
+// Created by jadjer on 06.02.23.
+//
 
-#include <Arduino.h>
+#include "pump/Pump.hpp"
 
-Pump::Pump(int controlPin, int feedbackPin) {
-  m_delay = 5000;
-  m_state = PumpState::DISABLE;
-  m_controlPin = controlPin;
-  m_feedbackPin = feedbackPin;
-  m_startTime = 0;
+#include <driver/gpio.h>
+#include <esp_log.h>
 
-  pinMode(m_controlPin, OUTPUT);
-  pinMode(m_feedbackPin, INPUT_PULLDOWN);
+constexpr auto tag = "Pump";
+
+Pump::Pump() :
+        m_state(PumpState::PUMP_DISABLED),
+        m_controlPin(static_cast<gpio_num_t>(CONFIG_PUMP_CONTROL_PIN)),
+        m_feedbackPin(static_cast<gpio_num_t>(CONFIG_PUMP_FEEDBACK_PIN)) {
+
+    gpio_config_t ioConf = {
+            .pin_bit_mask = (1ULL << m_controlPin),
+            .mode = GPIO_MODE_OUTPUT,
+            .pull_up_en = GPIO_PULLUP_DISABLE,
+            .pull_down_en = GPIO_PULLDOWN_DISABLE,
+            .intr_type = GPIO_INTR_DISABLE,
+    };
+
+    ESP_ERROR_CHECK(gpio_config(&ioConf));
 }
 
 Pump::~Pump() = default;
 
-void Pump::enable(int delay) {
-  if (m_state != PumpState::DISABLE) { return; }
+[[maybe_unused]] PumpState Pump::getState() const {
+    return m_state;
+}
 
-  m_delay = delay;
-  m_state = PumpState::ENABLE;
+bool Pump::isEnabled() const {
+    return m_state == PUMP_ENABLED;
+}
 
-  digitalWrite(m_controlPin, HIGH);
+bool Pump::isDisabled() const {
+    return m_state == PUMP_DISABLED;
+}
 
-  m_startTime = millis();
+bool Pump::inError() const {
+    return m_state == PUMP_IN_ERROR;
+}
+
+void Pump::enable() {
+    if (m_state != PUMP_DISABLED) { return; }
+
+    m_state = PUMP_ENABLED;
+
+    ESP_ERROR_CHECK(gpio_set_level(m_controlPin, 1));
+    ESP_LOGI(tag, "Is enabled");
+
+#if !CONFIG_PUMP_FEEDBACK_IGNORE
+    auto feedback = gpio_get_level(m_feedbackPin);
+    if (feedback == 1) { return; }
+
+    disable();
+
+    m_state = PUMP_IN_ERROR;
+
+    ESP_LOGI(tag, "In error");
+#endif
 }
 
 void Pump::disable() {
-  if (m_state != PumpState::ENABLE) { return; }
+    if (m_state != PUMP_ENABLED) { return; }
 
-  m_state = PumpState::DISABLE;
+    m_state = PUMP_DISABLED;
 
-  digitalWrite(m_controlPin, LOW);
-}
-
-PumpState Pump::getState() const {
-  return m_state;
-}
-
-void Pump::spinOnce() {
-  if (m_state != PumpState::ENABLE) { return; }
-
-  auto feedback = digitalRead(m_feedbackPin);
-  if (feedback == LOW) {
-    disable();
-    m_state = PumpState::ERROR;
-    return;
-  }
-
-  auto currentTime = millis();
-  auto diffTime = currentTime - m_startTime;
-  if (diffTime > m_delay) {
-    disable();
-  }
+    ESP_ERROR_CHECK(gpio_set_level(m_controlPin, 0));
+    ESP_LOGI(tag, "Is disabled");
 }

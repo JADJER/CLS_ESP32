@@ -13,43 +13,45 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 13.02.23.
+// Created by jadjer on 09.02.23.
 //
 
-#include "button/Button.hpp"
+#include "power_manager/PowerManager.hpp"
 
 #include <esp_log.h>
-#include <driver/gpio.h>
+#include <esp_sleep.h>
 
-constexpr auto tag = "Button";
+constexpr auto tag = "Power manager";
 
-Button::Button() :
-        m_buttonPin(static_cast<gpio_num_t>(CONFIG_BUTTON_PIN)),
-        m_buttonPinEnableLevel(1) {
+PowerManager::PowerManager() :
+        m_powerPin(static_cast<gpio_num_t>(CONFIG_EXTERNAL_POWER_PIN)),
+        m_powerPinEnableLevel(1) {
 
     gpio_config_t io_conf = {
-            .pin_bit_mask = (1ULL << m_buttonPin),
+            .pin_bit_mask = (1ULL << m_powerPin),
             .mode = GPIO_MODE_INPUT,
             .pull_up_en = GPIO_PULLUP_ENABLE,
             .pull_down_en = GPIO_PULLDOWN_DISABLE,
-            .intr_type = GPIO_INTR_DISABLE,
+            .intr_type = GPIO_INTR_LOW_LEVEL,
     };
 
-#if CONFIG_BUTTON_PIN_INVERTED
-    m_buttonPinEnableLevel = 0;
+#if CONFIG_EXTERNAL_POWER_PIN_INVERTED
+    m_powerPinEnableLevel = 0;
 #endif
 
     ESP_ERROR_CHECK(gpio_config(&io_conf));
+    ESP_ERROR_CHECK(esp_sleep_enable_ext0_wakeup(m_powerPin, m_powerPinEnableLevel));
 }
 
-Button::~Button() = default;
+PowerManager::~PowerManager() = default;
 
-bool Button::isPressed() const {
-    auto buttonLevel = gpio_get_level(m_buttonPin);
-    if (buttonLevel == m_buttonPinEnableLevel) {
-        ESP_LOGI(tag, "It's PRESSED");
+bool PowerManager::isEnabled() const {
+    auto powerLevel = gpio_get_level(m_powerPin);
+    if (powerLevel == m_powerPinEnableLevel) {
+        ESP_LOGI(tag, "External power is ENABLED");
         return true;
     }
 
+    ESP_LOGI(tag, "External power is DISABLED");
     return false;
 }

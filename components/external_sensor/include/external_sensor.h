@@ -13,21 +13,36 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 09.02.23.
+// Created by jadjer on 03.02.23.
 //
 
-#include "Controller.hpp"
-#include "configuration/Configuration.hpp"
 
-#include <memory>
+#pragma once
 
-IConfigurationPtr configuration;
+#include <stdbool.h>
+#include <esp_err.h>
 
-std::unique_ptr<Controller> controller;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-extern "C" void app_main(void) {
-    configuration = std::make_unique<Configuration>();
+/**
+ *
+ * @return
+ */
+esp_err_t external_sensor_init(void);
 
-    controller = std::make_unique<Controller>(configuration);
-    controller->spin();
+/**
+ *
+ * @return
+ */
+uint8_t extenal_sensor_is_enabled(void);
+
+/**
+ *
+ */
+//void sleep(void);
+
+#ifdef __cplusplus
 }
+#endif

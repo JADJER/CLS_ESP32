@@ -13,21 +13,15 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 09.02.23.
+// Created by jadjer on 12.02.23.
 //
 
-#include "Controller.hpp"
-#include "configuration/Configuration.hpp"
+#include "distance/Distance.hpp"
 
-#include <memory>
+Distance::Distance() = default;
 
-IConfigurationPtr configuration;
+Distance::~Distance() = default;
 
-std::unique_ptr<Controller> controller;
-
-extern "C" void app_main(void) {
-    configuration = std::make_unique<Configuration>();
-
-    controller = std::make_unique<Controller>(configuration);
-    controller->spin();
+uint64_t Distance::getDistance() const {
+    return 0;
 }

@@ -1,171 +1,134 @@
+// Copyright 2023 Pavel Suprunov
 //
-// Created by jadjer on 29.08.22.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+//
+// Created by jadjer on 09.02.23.
 //
 
 #include "Controller.hpp"
-#include "AdvertisedDevice.hpp"
-#include "BLE2901.hpp"
-#include "BlinkIndicator.hpp"
-#include "ErrorCodeIndicator.hpp"
-#include "ServicesUUID.hpp"
-#include "SetDelayCallback.hpp"
-#include "SetDistanceCallback.hpp"
-#include <Arduino.h>
-#include <BLE2902.h>
-#include <BLEDevice.h>
 
-Controller::Controller() : m_indicator(new BlinkIndicator(2)), m_button(0), m_pump(16, 17) {
-  BLEDevice::init("CLS");
+#include <esp_log.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <esp_task_wdt.h>
+#include <esp_sleep.h>
 
-  log_i("Bluetooth server start ...");
-  m_indicator->blink(100);
+constexpr auto tag = "Controller";
+constexpr auto taskResetPeriodMS = 1000;
+constexpr auto watchdogTimeoutMS = 5000;
 
-  m_server = BLEDevice::createServer();
-  m_server->setCallbacks(&m_serverCallback);
+Controller::Controller(std::shared_ptr<IConfiguration> const &configuration) :
+        m_pump(std::make_unique<Pump>()),
+        m_timer(std::make_unique<Timer>()),
+        m_button(std::make_unique<Button>()),
+        m_distance(std::make_unique<Distance>()),
+        m_powerManager(std::make_unique<PowerManager>()) {
 
-  m_client = BLEDevice::createClient();
+    assert(configuration != nullptr);
 
-  {
-    auto service = m_server->createService(serviceSettingsUUID, 9);
+    m_configuration = configuration;
 
-    m_settingDistance = service->createCharacteristic(settingDistanceUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
-    m_settingDistance->setCallbacks(new SetDistanceCallback());
-    m_settingDistance->addDescriptor(new BLE2901("Minimal Distance"));
+    esp_task_wdt_config_t wdtConfig = {
+            .timeout_ms = watchdogTimeoutMS,
+            .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,
+            .trigger_panic = true,
+    };
 
-    m_settingDelay = service->createCharacteristic(settingDelayUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
-    m_settingDelay->setCallbacks(new SetDelayCallback());
-    m_settingDelay->addDescriptor(new BLE2901("Lubricate Time"));
-
-    service->start();
-  }
-
-  {
-    auto service = m_server->createService(serviceMonitorUUID, 11);
-
-    m_monitorDistance = service->createCharacteristic(monitorDistanceUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-    m_monitorDistance->addDescriptor(new BLE2901("Distance"));
-    m_monitorDistance->addDescriptor(new BLE2902());
-
-    m_monitorOilLevel = service->createCharacteristic(monitorOilLevelUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-    m_monitorOilLevel->addDescriptor(new BLE2901("Oil Level"));
-    m_monitorOilLevel->addDescriptor(new BLE2902());
-
-    service->start();
-  }
-
-  BLEAdvertising* advertising = BLEDevice::getAdvertising();
-  advertising->addServiceUUID(serviceSettingsUUID);
-  advertising->start();
-
-  log_i("HDS start scan...");
-  m_indicator->blink(250);
-
-  log_i("Initialize done");
-  m_indicator->enable();
+    esp_task_wdt_init(&wdtConfig);
 }
 
 Controller::~Controller() = default;
 
 [[noreturn]] void Controller::spin() {
-  while (true) {
-    if (not m_client->isConnected()) { connectToServer(); }
-    if (m_serverCallback.isConnected()) { updateCharacteristics(); }
-    if (m_button.isPressed()) { manualLubricate(); }
-    if (m_pump.getState() != PumpState::ERROR) { spinPump(); }
+    ESP_LOGI(tag, "Loop start");
 
-    delay(100);
-  }
+    ESP_ERROR_CHECK(esp_task_wdt_add(nullptr));
+    ESP_ERROR_CHECK(esp_task_wdt_status(nullptr));
+
+    while (true) {
+        ESP_ERROR_CHECK(esp_task_wdt_reset());
+
+        spinOnce();
+        vTaskDelay(pdMS_TO_TICKS(taskResetPeriodMS));
+    }
+
+    ESP_LOGI(tag, "Loop stop");
 }
 
-void Controller::connectToServer() {
-  AdvertisedDevice advertisedDevice;
+void Controller::spinOnce() {
+    sleep();
 
-  auto scan = BLEDevice::getScan();
-  scan->setAdvertisedDeviceCallbacks(&advertisedDevice);
-  scan->setInterval(1349);
-  scan->setWindow(449);
-  scan->setActiveScan(false);
-  scan->start(5, false);
+    pumpManual();
 
-  auto device = advertisedDevice.getAdvertisedDevice();
-  if (device == nullptr) { return; }
+    lubricateFromDistance();
+    lubricateFromTimer();
 
-  log_i("Forming a connection to %s", device->getAddress().toString().c_str());
-
-  m_client->connect(device);
-
-  if (not m_client->isConnected()) { return; }
-
-  log_i(" - Connected to server");
-
-  m_client->setMTU(517);
-
-  BLERemoteService* serviceVehicle = m_client->getService(serviceVehicleUUID);
-  if (serviceVehicle == nullptr) {
-    m_client->disconnect();
-    return;
-  }
-
-  m_vehicleSpeed = serviceVehicle->getCharacteristic(vehicleSpeedUUID);
-  if (m_vehicleSpeed == nullptr or not m_vehicleSpeed->canNotify()) {
-    m_client->disconnect();
-    return;
-  }
-
-  m_vehicleState = serviceVehicle->getCharacteristic(vehicleStateUUID);
-  if (m_vehicleState == nullptr or not m_vehicleState->canNotify()) {
-    m_client->disconnect();
-    return;
-  }
-
-  m_vehicleSpeed->registerForNotify([=](auto characteristic, uint8_t const* data, size_t length, bool isNotify) {
-    if (not isNotify) { return; }
-    if (length == 0) { return; }
-
-    int speed = data[0];
-
-    m_distance.updateSpeed(speed);
-  });
-
-  m_vehicleState->registerForNotify([=](auto, uint8_t const* data, size_t length, bool isNotify) {
-    if (not isNotify) { return; }
-    if (length == 0) { return; }
-
-    int state = data[0];
-  });
+    m_timer->spinOnce();
 }
 
-void Controller::updateCharacteristics() {
-  int oilLevel = 100;
-  float distance = m_distance.getDistance();
+void Controller::sleep() {
+    if (m_pump->isEnabled()) { return; }
+    if (m_powerManager->isEnabled()) { return; }
 
-  m_monitorDistance->setValue(distance);
-  m_monitorDistance->notify();
-
-  m_monitorOilLevel->setValue(oilLevel);
-  m_monitorOilLevel->notify();
+    ESP_LOGI(tag, "Sleep");
+    esp_deep_sleep_start();
 }
 
-void Controller::manualLubricate() {
-  m_indicator->blink(500);
-  m_pump.enable(2000);
+void Controller::lubricateFromDistance() {
+    if (not m_configuration->isLubricateFromDistance()) { return; }
 
-  m_button.resetState();
+    auto currentDistance = m_distance->getDistance();
+    auto lubricateDistance = m_configuration->getLimitDistance();
+
+    if (currentDistance >= lubricateDistance) {
+        pumpStart();
+    }
 }
 
-void Controller::spinPump() {
-  m_pump.spinOnce();
+void Controller::lubricateFromTimer() {
+    if (not m_configuration->isLubricateFromTimer()) { return; }
+    if (m_timer->isEnabled()) { return; }
 
-  switch (m_pump.getState()) {
-    case PumpState::DISABLE:
-      m_indicator->enable();
-      break;
-    case PumpState::ENABLE:
-      break;
-    case PumpState::ERROR:
-      delete m_indicator;
-      m_indicator = new ErrorCodeIndicator(2);
-      m_indicator->blink(1);
-      break;
-  }
+    auto pumpEnableDelay = m_configuration->getPumpTimeoutEnable();
+
+    m_timer->stop();
+    m_timer->setCompleteCallback([this] { pumpStart(); });
+    m_timer->start(pumpEnableDelay);
+}
+
+void Controller::pumpStart() {
+    if (m_pump->isEnabled()) { return; }
+
+    auto pumpDisableDelay = m_configuration->getPumpTimeoutDisable();
+
+    m_pump->enable();
+
+    m_timer->stop();
+    m_timer->setCompleteCallback([this] { pumpStop(); });
+    m_timer->start(pumpDisableDelay);
+}
+
+void Controller::pumpStop() {
+    if (m_pump->isDisabled()) { return; }
+
+    m_pump->disable();
+
+    m_timer->stop();
+}
+
+void Controller::pumpManual() {
+    if (m_button->isPressed()) {
+        pumpStart();
+    }
 }

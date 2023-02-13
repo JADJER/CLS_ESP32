@@ -16,18 +16,24 @@
 // Created by jadjer on 09.02.23.
 //
 
-#include "Controller.hpp"
-#include "configuration/Configuration.hpp"
 
-#include <memory>
+#pragma once
 
-IConfigurationPtr configuration;
+#include <esp_err.h>
 
-std::unique_ptr<Controller> controller;
+#include "IConfiguration.hpp"
 
-extern "C" void app_main(void) {
-    configuration = std::make_unique<Configuration>();
+class Configuration : public IConfiguration {
+public:
+    Configuration();
+    ~Configuration() override;
 
-    controller = std::make_unique<Controller>(configuration);
-    controller->spin();
-}
+public:
+    [[nodiscard]] bool isLubricateFromTimer() const override;
+    [[nodiscard]] bool isLubricateFromDistance() const override;
+
+public:
+    [[nodiscard]] uint64_t getLimitDistance() const override;
+    [[nodiscard]] std::chrono::seconds getPumpTimeoutEnable() const override;
+    [[nodiscard]] std::chrono::seconds getPumpTimeoutDisable() const override;
+};

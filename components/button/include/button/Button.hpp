@@ -13,21 +13,36 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 09.02.23.
+// Created by jadjer on 13.02.23.
 //
 
-#include "Controller.hpp"
-#include "configuration/Configuration.hpp"
 
-#include <memory>
+#pragma once
 
-IConfigurationPtr configuration;
+#include <driver/gpio.h>
 
-std::unique_ptr<Controller> controller;
+/**
+ * @class Button
+ */
+class Button {
+public:
+    /**
+     * Default constructor
+     */
+    Button();
+    /**
+     * Default destructor
+     */
+    ~Button();
 
-extern "C" void app_main(void) {
-    configuration = std::make_unique<Configuration>();
+public:
+    /**
+     * Check if button has been pressed
+     * @return True if pressed, otherwise false
+     */
+    [[nodiscard]] bool isPressed() const;
 
-    controller = std::make_unique<Controller>(configuration);
-    controller->spin();
-}
+private:
+    gpio_num_t m_buttonPin;
+    uint8_t m_buttonPinEnableLevel;
+};

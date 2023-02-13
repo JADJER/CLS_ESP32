@@ -16,18 +16,33 @@
 // Created by jadjer on 09.02.23.
 //
 
-#include "Controller.hpp"
-#include "configuration/Configuration.hpp"
 
-#include <memory>
+#pragma once
 
-IConfigurationPtr configuration;
+#include <driver/gpio.h>
 
-std::unique_ptr<Controller> controller;
+/**
+ * @class PowerManager
+ */
+class PowerManager {
+public:
+    /**
+     * Default constructor
+     */
+    PowerManager();
+    /**
+     * Default destructor
+     */
+    ~PowerManager();
 
-extern "C" void app_main(void) {
-    configuration = std::make_unique<Configuration>();
+public:
+    /**
+     * Check if power is enabled
+     * @return True if enabled. false is disabled
+     */
+    [[nodiscard]] bool isEnabled() const;
 
-    controller = std::make_unique<Controller>(configuration);
-    controller->spin();
-}
+private:
+    gpio_num_t m_powerPin;
+    uint8_t m_powerPinEnableLevel;
+};
