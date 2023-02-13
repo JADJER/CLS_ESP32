@@ -31,6 +31,7 @@ constexpr auto watchdogTimeoutMS = 5000;
 Controller::Controller(std::shared_ptr<IConfiguration> const &configuration) :
         m_pump(std::make_unique<Pump>()),
         m_timer(std::make_unique<Timer>()),
+        m_button(std::make_unique<Button>()),
         m_distance(std::make_unique<Distance>()),
         m_powerManager(std::make_unique<PowerManager>()) {
 
@@ -68,6 +69,8 @@ Controller::~Controller() = default;
 void Controller::spinOnce() {
     sleep();
 
+    pumpManual();
+
     lubricateFromDistance();
     lubricateFromTimer();
 
@@ -95,29 +98,25 @@ void Controller::lubricateFromDistance() {
 
 void Controller::lubricateFromTimer() {
     if (not m_configuration->isLubricateFromTimer()) { return; }
+    if (m_timer->isEnabled()) { return; }
 
-    if (not m_timer->isEnabled()) {
-        auto pumpTimeoutEnable = m_configuration->getPumpTimeoutEnable();
+    auto pumpEnableDelay = m_configuration->getPumpTimeoutEnable();
 
-        m_timer->setCompleteCallback([this] {
-           pumpStart();
-        });
-        m_timer->start(pumpTimeoutEnable);
-    }
+    m_timer->stop();
+    m_timer->setCompleteCallback([this] { pumpStart(); });
+    m_timer->start(pumpEnableDelay);
 }
 
 void Controller::pumpStart() {
     if (m_pump->isEnabled()) { return; }
 
-    auto pumpTimeoutDisable = m_configuration->getPumpTimeoutDisable();
+    auto pumpDisableDelay = m_configuration->getPumpTimeoutDisable();
 
     m_pump->enable();
 
     m_timer->stop();
-    m_timer->setCompleteCallback([this] {
-        pumpStop();
-    });
-    m_timer->start(pumpTimeoutDisable);
+    m_timer->setCompleteCallback([this] { pumpStop(); });
+    m_timer->start(pumpDisableDelay);
 }
 
 void Controller::pumpStop() {
@@ -126,4 +125,10 @@ void Controller::pumpStop() {
     m_pump->disable();
 
     m_timer->stop();
+}
+
+void Controller::pumpManual() {
+    if (m_button->isPressed()) {
+        pumpStart();
+    }
 }

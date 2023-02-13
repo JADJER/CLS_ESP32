@@ -62,11 +62,6 @@ public:
      * @return True if enabled, otherwise false
      */
     [[nodiscard]] bool isEnabled() const;
-    /**
-     * Is timer completed
-     * @return True if completed, otherwise false
-     */
-    [[nodiscard]] bool isCompleted() const;
 
 public:
     /**
@@ -76,7 +71,6 @@ public:
 
 protected:
     bool m_isEnabled;
-    bool m_isCompleted;
     Callback m_callback;
     std::chrono::seconds m_delay;
     std::chrono::time_point<std::chrono::system_clock> m_startTime;

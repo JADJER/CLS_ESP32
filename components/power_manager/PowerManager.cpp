@@ -16,7 +16,7 @@
 // Created by jadjer on 09.02.23.
 //
 
-#include "PowerManager.hpp"
+#include "power_manager/PowerManager.hpp"
 
 #include <esp_log.h>
 #include <esp_sleep.h>
@@ -35,7 +35,7 @@ PowerManager::PowerManager() :
             .intr_type = GPIO_INTR_LOW_LEVEL,
     };
 
-#ifdef CONFIG_EXTERNAL_POWER_PIN_INVERTED
+#if CONFIG_EXTERNAL_POWER_PIN_INVERTED
     m_powerPinEnableLevel = 0;
 #endif
 
@@ -54,8 +54,4 @@ bool PowerManager::isEnabled() const {
 
     ESP_LOGI(tag, "External power is DISABLED");
     return false;
-}
-
-bool PowerManager::isDisabled() const {
-    return not isEnabled();
 }

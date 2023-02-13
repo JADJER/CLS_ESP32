@@ -67,10 +67,13 @@ void Pump::enable() {
 
 #if !CONFIG_PUMP_FEEDBACK_IGNORE
     auto feedback = gpio_get_level(m_feedbackPin);
-    if (feedback == 0) {
-        disable();
-        m_state = PUMP_IN_ERROR;
-    }
+    if (feedback == 1) { return; }
+
+    disable();
+
+    m_state = PUMP_IN_ERROR;
+
+    ESP_LOGI(tag, "In error");
 #endif
 }
 

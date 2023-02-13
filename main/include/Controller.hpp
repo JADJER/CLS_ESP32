@@ -24,8 +24,9 @@
 
 #include "pump/Pump.hpp"
 #include "timer/Timer.hpp"
-#include "Distance.hpp"
-#include "PowerManager.hpp"
+#include "button/Button.hpp"
+#include "distance/Distance.hpp"
+#include "power_manager/PowerManager.hpp"
 
 #include <memory>
 
@@ -46,6 +47,7 @@ private:
     void lubricateFromTimer();
     void pumpStart();
     void pumpStop();
+    void pumpManual();
 
 private:
     IConfigurationPtr m_configuration;
@@ -53,6 +55,7 @@ private:
 private:
     std::unique_ptr<Pump> m_pump;
     std::unique_ptr<Timer> m_timer;
+    std::unique_ptr<Button> m_button;
     std::unique_ptr<Distance> m_distance;
     std::unique_ptr<PowerManager> m_powerManager;
 };

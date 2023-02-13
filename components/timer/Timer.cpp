@@ -24,7 +24,6 @@ constexpr auto tag = "Timer";
 
 Timer::Timer() :
         m_isEnabled(false),
-        m_isCompleted(true),
         m_callback(nullptr),
         m_delay(60),
         m_startTime(std::chrono::system_clock::now()) {}
@@ -43,21 +42,19 @@ void Timer::start(std::chrono::seconds delay) {
     m_delay = std::chrono::seconds(delay);
     m_startTime = std::chrono::system_clock::now();
 
-    m_isCompleted = false;
+    ESP_LOGI(tag, "Start for %lld second(s)", m_delay.count());
 }
 
 void Timer::stop() {
     if (not m_isEnabled) { return; }
 
     m_isEnabled = false;
+
+    ESP_LOGI(tag, "Stop");
 }
 
 bool Timer::isEnabled() const {
     return m_isEnabled;
-}
-
-bool Timer::isCompleted() const {
-    return m_isCompleted;
 }
 
 void Timer::spinOnce() {
@@ -72,7 +69,6 @@ void Timer::spinOnce() {
 
     if (endTimeSec.count() <= 0) {
         m_isEnabled = false;
-        m_isCompleted = true;
 
         m_callback();
     }

@@ -303,6 +303,13 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
+# Button
+#
+CONFIG_BUTTON_PIN=0
+CONFIG_BUTTON_PIN_INVERTED=y
+# end of Button
+
+#
 # External sensor
 #
 CONFIG_EXTERNAL_SENSOR_PIN=32

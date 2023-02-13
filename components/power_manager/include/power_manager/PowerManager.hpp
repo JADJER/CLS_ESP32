@@ -13,15 +13,36 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 12.02.23.
+// Created by jadjer on 09.02.23.
 //
 
-#include "distance/Distance.hpp"
 
-Distance::Distance() = default;
+#pragma once
 
-Distance::~Distance() = default;
+#include <driver/gpio.h>
 
-uint64_t Distance::getDistance() const {
-    return 0;
-}
+/**
+ * @class PowerManager
+ */
+class PowerManager {
+public:
+    /**
+     * Default constructor
+     */
+    PowerManager();
+    /**
+     * Default destructor
+     */
+    ~PowerManager();
+
+public:
+    /**
+     * Check if power is enabled
+     * @return True if enabled. false is disabled
+     */
+    [[nodiscard]] bool isEnabled() const;
+
+private:
+    gpio_num_t m_powerPin;
+    uint8_t m_powerPinEnableLevel;
+};

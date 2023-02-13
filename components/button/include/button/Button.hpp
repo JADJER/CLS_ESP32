@@ -13,42 +13,36 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 09.02.23.
+// Created by jadjer on 13.02.23.
 //
 
 
 #pragma once
 
-#include <esp_err.h>
 #include <driver/gpio.h>
 
 /**
- * @class PowerManager
+ * @class Button
  */
-class PowerManager {
+class Button {
 public:
     /**
      * Default constructor
      */
-    PowerManager();
+    Button();
     /**
      * Default destructor
      */
-    ~PowerManager();
+    ~Button();
 
 public:
     /**
-     * Check if power is enabled
-     * @return True if enabled. false is disabled
+     * Check if button has been pressed
+     * @return True if pressed, otherwise false
      */
-    [[nodiscard]] bool isEnabled() const;
-    /**
-     * Check if power is disabled
-     * @return True if disabled. false is enabled
-     */
-    [[nodiscard]] bool isDisabled() const;
+    [[nodiscard]] bool isPressed() const;
 
 private:
-    gpio_num_t m_powerPin;
-    uint8_t m_powerPinEnableLevel;
+    gpio_num_t m_buttonPin;
+    uint8_t m_buttonPinEnableLevel;
 };
