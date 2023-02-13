@@ -21,9 +21,6 @@
 
 #include <esp_err.h>
 #include <driver/gpio.h>
-#include <chrono>
-
-using namespace std::chrono_literals;
 
 /**
  * @enum PumpState
@@ -51,9 +48,8 @@ public:
 public:
     /**
      * @brief Pump power enable
-     * @param delay Pump disable after time
      */
-    void enable(std::chrono::seconds delay = 60s);
+    void enable();
     /**
      * @brief Pump power disable
      */
@@ -81,16 +77,8 @@ public:
      */
     [[nodiscard]] bool inError() const;
 
-public:
-    /**
-     * @brief Pump control logic spin
-     */
-    void spinOnce();
-
 private:
     PumpState m_state;
     gpio_num_t m_controlPin;
     gpio_num_t m_feedbackPin;
-    std::chrono::seconds m_delay;
-    std::chrono::time_point<std::chrono::system_clock> m_startTime;
 };

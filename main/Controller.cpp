@@ -49,11 +49,6 @@ Controller::Controller(std::shared_ptr<IConfiguration> const &configuration) :
 
 Controller::~Controller() = default;
 
-void Controller::sleep() {
-    ESP_LOGI(tag, "Sleep");
-    esp_deep_sleep_start();
-}
-
 [[noreturn]] void Controller::spin() {
     ESP_LOGI(tag, "Loop start");
 
@@ -71,21 +66,64 @@ void Controller::sleep() {
 }
 
 void Controller::spinOnce() {
-    if (m_powerManager->isDisabled() and m_pump->isDisabled()) { sleep(); }
+    sleep();
 
-    if (m_configuration->isLubricateFromDistance()) {
-        auto currentDistance = m_distance->getDistance();
-        auto lubricateDistance = m_configuration->getLimitDistance();
-
-        if (currentDistance >= lubricateDistance) { m_pump->enable(5s); }
-    }
-
-    if (m_configuration->isLubricateFromTimer()) {
-        if (m_timer->isCompleted()) { m_pump->enable(5s); }
-
-        if (not m_timer->isEnabled()) { m_timer->start(60s); }
-    }
+    lubricateFromDistance();
+    lubricateFromTimer();
 
     m_timer->spinOnce();
-    m_pump->spinOnce();
+}
+
+void Controller::sleep() {
+    if (m_pump->isEnabled()) { return; }
+    if (m_powerManager->isEnabled()) { return; }
+
+    ESP_LOGI(tag, "Sleep");
+    esp_deep_sleep_start();
+}
+
+void Controller::lubricateFromDistance() {
+    if (not m_configuration->isLubricateFromDistance()) { return; }
+
+    auto currentDistance = m_distance->getDistance();
+    auto lubricateDistance = m_configuration->getLimitDistance();
+
+    if (currentDistance >= lubricateDistance) {
+        pumpStart();
+    }
+}
+
+void Controller::lubricateFromTimer() {
+    if (not m_configuration->isLubricateFromTimer()) { return; }
+
+    if (not m_timer->isEnabled()) {
+        auto pumpTimeoutEnable = m_configuration->getPumpTimeoutEnable();
+
+        m_timer->setCompleteCallback([this] {
+           pumpStart();
+        });
+        m_timer->start(pumpTimeoutEnable);
+    }
+}
+
+void Controller::pumpStart() {
+    if (m_pump->isEnabled()) { return; }
+
+    auto pumpTimeoutDisable = m_configuration->getPumpTimeoutDisable();
+
+    m_pump->enable();
+
+    m_timer->stop();
+    m_timer->setCompleteCallback([this] {
+        pumpStop();
+    });
+    m_timer->start(pumpTimeoutDisable);
+}
+
+void Controller::pumpStop() {
+    if (m_pump->isDisabled()) { return; }
+
+    m_pump->disable();
+
+    m_timer->stop();
 }

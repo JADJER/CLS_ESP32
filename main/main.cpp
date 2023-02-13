@@ -17,7 +17,7 @@
 //
 
 #include "Controller.hpp"
-#include "Configuration.hpp"
+#include "configuration/Configuration.hpp"
 
 #include <memory>
 

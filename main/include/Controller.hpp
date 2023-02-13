@@ -19,13 +19,13 @@
 
 #pragma once
 
-#include "IConfiguration.hpp"
+#include "configuration/IConfiguration.hpp"
+#include "configuration/Configuration.hpp"
 
-#include "Pump.hpp"
-#include "Timer.hpp"
+#include "pump/Pump.hpp"
+#include "timer/Timer.hpp"
 #include "Distance.hpp"
 #include "PowerManager.hpp"
-#include "Configuration.hpp"
 
 #include <memory>
 
@@ -35,11 +35,17 @@ public:
     ~Controller();
 
 public:
-    void sleep();
+    [[noreturn]] void spin();
 
 public:
-    [[noreturn]] void spin();
     void spinOnce();
+
+private:
+    void sleep();
+    void lubricateFromDistance();
+    void lubricateFromTimer();
+    void pumpStart();
+    void pumpStop();
 
 private:
     IConfigurationPtr m_configuration;

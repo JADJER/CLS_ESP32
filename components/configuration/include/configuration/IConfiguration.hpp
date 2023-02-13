@@ -13,25 +13,27 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 09.02.23.
+// Created by jadjer on 10.02.23.
 //
 
 
 #pragma once
 
-#include <esp_err.h>
+#include <memory>
+#include <chrono>
 
-#include "IConfiguration.hpp"
-
-class Configuration : public IConfiguration {
+class IConfiguration {
 public:
-    Configuration();
-    ~Configuration() override;
+    virtual ~IConfiguration() = default;
 
 public:
-    [[nodiscard]] bool isLubricateFromTimer() const override;
-    [[nodiscard]] bool isLubricateFromDistance() const override;
+    [[nodiscard]] virtual bool isLubricateFromTimer() const = 0;
+    [[nodiscard]] virtual bool isLubricateFromDistance() const = 0;
 
 public:
-    uint64_t getLimitDistance() const override;
+    [[nodiscard]] virtual uint64_t getLimitDistance() const = 0;
+    [[nodiscard]] virtual std::chrono::seconds getPumpTimeoutEnable() const = 0;
+    [[nodiscard]] virtual std::chrono::seconds getPumpTimeoutDisable() const = 0;
 };
+
+using IConfigurationPtr = std::shared_ptr<IConfiguration>;

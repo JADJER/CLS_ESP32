@@ -16,7 +16,7 @@
 // Created by jadjer on 10.02.23.
 //
 
-#include "Timer.hpp"
+#include "timer/Timer.hpp"
 
 #include <esp_log.h>
 
@@ -24,19 +24,25 @@ constexpr auto tag = "Timer";
 
 Timer::Timer() :
         m_isEnabled(false),
-        m_isCompleted(false),
-        m_delay(60s),
+        m_isCompleted(true),
+        m_callback(nullptr),
+        m_delay(60),
         m_startTime(std::chrono::system_clock::now()) {}
 
 Timer::~Timer() = default;
+
+void Timer::setCompleteCallback(std::function<void()> const &callback) {
+    m_callback = callback;
+}
 
 void Timer::start(std::chrono::seconds delay) {
     if (m_isEnabled) { return; }
 
     m_isEnabled = true;
 
-    m_delay = delay;
+    m_delay = std::chrono::seconds(delay);
     m_startTime = std::chrono::system_clock::now();
+
     m_isCompleted = false;
 }
 
@@ -47,9 +53,8 @@ void Timer::stop() {
 }
 
 bool Timer::isEnabled() const {
-    return false;
+    return m_isEnabled;
 }
-
 
 bool Timer::isCompleted() const {
     return m_isCompleted;
@@ -68,5 +73,7 @@ void Timer::spinOnce() {
     if (endTimeSec.count() <= 0) {
         m_isEnabled = false;
         m_isCompleted = true;
+
+        m_callback();
     }
 }

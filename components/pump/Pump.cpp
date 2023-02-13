@@ -16,20 +16,17 @@
 // Created by jadjer on 06.02.23.
 //
 
-#include "Pump.hpp"
+#include "pump/Pump.hpp"
 
 #include <driver/gpio.h>
 #include <esp_log.h>
-#include <chrono>
 
 constexpr auto tag = "Pump";
 
 Pump::Pump() :
         m_state(PumpState::PUMP_DISABLED),
         m_controlPin(static_cast<gpio_num_t>(CONFIG_PUMP_CONTROL_PIN)),
-        m_feedbackPin(static_cast<gpio_num_t>(CONFIG_PUMP_FEEDBACK_PIN)),
-        m_delay(60s),
-        m_startTime(std::chrono::system_clock::now()) {
+        m_feedbackPin(static_cast<gpio_num_t>(CONFIG_PUMP_FEEDBACK_PIN)) {
 
     gpio_config_t ioConf = {
             .pin_bit_mask = (1ULL << m_controlPin),
@@ -60,11 +57,10 @@ bool Pump::inError() const {
     return m_state == PUMP_IN_ERROR;
 }
 
-void Pump::enable(std::chrono::seconds delay) {
+void Pump::enable() {
     if (m_state != PUMP_DISABLED) { return; }
 
     m_state = PUMP_ENABLED;
-    m_delay = delay;
 
     ESP_ERROR_CHECK(gpio_set_level(m_controlPin, 1));
     ESP_LOGI(tag, "Is enabled");
@@ -74,11 +70,8 @@ void Pump::enable(std::chrono::seconds delay) {
     if (feedback == 0) {
         disable();
         m_state = PUMP_IN_ERROR;
-        return;
     }
 #endif
-
-    m_startTime = std::chrono::system_clock::now();
 }
 
 void Pump::disable() {
@@ -88,21 +81,4 @@ void Pump::disable() {
 
     ESP_ERROR_CHECK(gpio_set_level(m_controlPin, 0));
     ESP_LOGI(tag, "Is disabled");
-}
-
-void Pump::spinOnce() {
-    if (m_state != PUMP_ENABLED) { return; }
-
-
-
-    auto currentTime = std::chrono::system_clock::now();
-    auto diffTime = currentTime - m_startTime;
-    auto endTime = m_delay - diffTime;
-    auto endTimeSec = std::chrono::duration_cast<std::chrono::seconds>(endTime);
-
-    ESP_LOGI(tag, "Pump disabled until %lld second(s)", endTimeSec.count());
-
-    if (endTimeSec.count() <= 0) {
-        disable();
-    }
 }

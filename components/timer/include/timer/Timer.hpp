@@ -20,13 +20,14 @@
 #pragma once
 
 #include <chrono>
-
-using namespace std::chrono_literals;
+#include <functional>
 
 /**
  * @class Timer
  */
 class Timer {
+    using Callback = std::function<void()>;
+
 public:
     /**
      * Default constructor
@@ -39,10 +40,17 @@ public:
 
 public:
     /**
+     * Callback
+     * @param callback
+     */
+    void setCompleteCallback(Callback const &callback);
+
+public:
+    /**
      * Timer start
      * @param delay Timer disable after time
      */
-    void start(std::chrono::seconds delay = 60s);
+    void start(std::chrono::seconds delay);
     /**
      * Timer stop
      */
@@ -56,7 +64,7 @@ public:
     [[nodiscard]] bool isEnabled() const;
     /**
      * Is timer completed
-     * @return True if completed. otherwise false
+     * @return True if completed, otherwise false
      */
     [[nodiscard]] bool isCompleted() const;
 
@@ -66,9 +74,10 @@ public:
      */
     void spinOnce();
 
-private:
+protected:
     bool m_isEnabled;
     bool m_isCompleted;
+    Callback m_callback;
     std::chrono::seconds m_delay;
     std::chrono::time_point<std::chrono::system_clock> m_startTime;
 };

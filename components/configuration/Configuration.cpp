@@ -16,7 +16,7 @@
 // Created by jadjer on 09.02.23.
 //
 
-#include "Configuration.hpp"
+#include "configuration/Configuration.hpp"
 
 #include <nvs_flash.h>
 #include <nvs.h>
@@ -25,11 +25,11 @@ constexpr auto tag = "Configuration";
 
 Configuration::Configuration() {
     esp_err_t err = nvs_flash_init();
-    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES or err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
         err = nvs_flash_init();
     }
-    ESP_ERROR_CHECK( err );
+    ESP_ERROR_CHECK(err);
 }
 
 Configuration::~Configuration() = default;
@@ -43,9 +43,13 @@ bool Configuration::isLubricateFromDistance() const {
 }
 
 uint64_t Configuration::getLimitDistance() const {
-    return 5;
+    return 500;
 }
 
+std::chrono::seconds Configuration::getPumpTimeoutEnable() const {
+    return std::chrono::hours(1);
+}
 
-
-
+std::chrono::seconds Configuration::getPumpTimeoutDisable() const {
+    return std::chrono::minutes(1);
+}
