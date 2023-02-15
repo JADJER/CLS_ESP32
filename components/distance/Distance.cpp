@@ -18,10 +18,15 @@
 
 #include "distance/Distance.hpp"
 
-Distance::Distance() = default;
+Distance::Distance() :
+        m_distance(0) {}
 
 Distance::~Distance() = default;
 
 uint64_t Distance::getDistance() const {
-    return 0;
+    return m_distance;
+}
+
+void Distance::setDistance(uint64_t distance) {
+    m_distance = distance;
 }

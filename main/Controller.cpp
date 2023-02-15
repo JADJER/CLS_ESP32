@@ -32,7 +32,9 @@ Controller::Controller(std::shared_ptr<IConfiguration> const &configuration) :
         m_pump(std::make_unique<Pump>()),
         m_timer(std::make_unique<Timer>()),
         m_button(std::make_unique<Button>()),
+        m_updater(std::make_unique<Updater>()),
         m_distance(std::make_unique<Distance>()),
+//        m_bluetooth(std::make_unique<Bluetooth>()),
         m_powerManager(std::make_unique<PowerManager>()) {
 
     assert(configuration != nullptr);
@@ -56,6 +58,9 @@ Controller::~Controller() = default;
     ESP_ERROR_CHECK(esp_task_wdt_add(nullptr));
     ESP_ERROR_CHECK(esp_task_wdt_status(nullptr));
 
+    m_updater->currentPartitionPrint();
+    m_updater->updateApply();
+
     while (true) {
         ESP_ERROR_CHECK(esp_task_wdt_reset());
 
@@ -75,6 +80,7 @@ void Controller::spinOnce() {
     lubricateFromTimer();
 
     m_timer->spinOnce();
+//    m_bluetooth->spinOnce();
 }
 
 void Controller::sleep() {

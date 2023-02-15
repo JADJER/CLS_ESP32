@@ -8,8 +8,10 @@ set(COMPONENTS
         pump
         timer
         button
+        updater
         distance
+#        bluetooth
         configuration
         power_manager)
 
-idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS include REQUIRES ${COMPONENTS})
+idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS . REQUIRES ${COMPONENTS})

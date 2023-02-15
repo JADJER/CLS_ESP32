@@ -13,24 +13,24 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 12.02.23.
+// Created by jadjer on 14.02.23.
 //
 
 
 #pragma once
 
+/* Heart-rate configuration */
+#define GATT_HRS_UUID                           0x180D
+#define GATT_HRS_MEASUREMENT_UUID               0x2A37
+#define GATT_HRS_BODY_SENSOR_LOC_UUID           0x2A38
+#define GATT_DEVICE_INFO_UUID                   0x180A
+#define GATT_MANUFACTURER_NAME_UUID             0x2A29
+#define GATT_MODEL_NUMBER_UUID                  0x2A24
 
-#include <cstdint>
+extern uint16_t hrs_hrm_handle;
 
-class Distance {
-public:
-    Distance();
-    ~Distance();
+struct ble_hs_cfg;
+struct ble_gatt_register_ctxt;
 
-public:
-    [[nodiscard]] uint64_t getDistance() const;
-    void setDistance(uint64_t distance);
-
-private:
-    uint64_t m_distance;
-};
+void gatt_svr_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg);
+int gatt_svr_init();

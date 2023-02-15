@@ -18,8 +18,8 @@
 
 #include "configuration/Configuration.hpp"
 
-#include <nvs_flash.h>
 #include <nvs.h>
+#include <nvs_flash.h>
 
 constexpr auto tag = "Configuration";
 
