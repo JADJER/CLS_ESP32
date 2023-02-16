@@ -6,16 +6,12 @@ set(SOURCES
         BLEAddress.cpp
         BLEAdvertisedDevice.cpp
         BLEAdvertising.cpp
-        BLEBeacon.cpp
         BLECharacteristic.cpp
         BLECharacteristicMap.cpp
         BLEClient.cpp
         BLEDescriptor.cpp
         BLEDescriptorMap.cpp
         BLEDevice.cpp
-        BLEEddystoneTLM.cpp
-        BLEEddystoneURL.cpp
-        BLEExceptions.cpp
         BLEHIDDevice.cpp
         BLERemoteCharacteristic.cpp
         BLERemoteDescriptor.cpp

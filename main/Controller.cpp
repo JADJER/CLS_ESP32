@@ -34,7 +34,7 @@ Controller::Controller(std::shared_ptr<IConfiguration> const &configuration) :
         m_button(std::make_unique<Button>()),
         m_updater(std::make_unique<Updater>()),
         m_distance(std::make_unique<Distance>()),
-//        m_bluetooth(std::make_unique<Bluetooth>()),
+        m_bluetooth(std::make_unique<Bluetooth>("CLS")),
         m_powerManager(std::make_unique<PowerManager>()) {
 
     assert(configuration != nullptr);
@@ -48,6 +48,9 @@ Controller::Controller(std::shared_ptr<IConfiguration> const &configuration) :
     };
 
     esp_task_wdt_init(&wdtConfig);
+
+    m_bluetooth->advertiseConfig();
+    m_bluetooth->advertiseStart();
 }
 
 Controller::~Controller() = default;

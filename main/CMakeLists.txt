@@ -10,7 +10,7 @@ set(COMPONENTS
         button
         updater
         distance
-#        bluetooth
+        bluetooth
         configuration
         power_manager)
 

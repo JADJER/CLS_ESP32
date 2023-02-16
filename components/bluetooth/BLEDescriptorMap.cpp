@@ -1,3 +1,17 @@
+// Copyright 2023 Pavel Suprunov
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 /*
  * BLEDescriptorMap.cpp
  *
@@ -6,11 +20,12 @@
  */
 #include "sdkconfig.h"
 #if defined(CONFIG_BLUEDROID_ENABLED)
-#include <sstream>
-#include <iomanip>
 #include "BLECharacteristic.h"
 #include "BLEDescriptor.h"
-#include <esp_gatts_api.h>   // ESP32 BLE
+
+#include <esp_gatts_api.h>// ESP32 BLE
+#include <iomanip>
+#include <sstream>
 #ifdef ARDUINO_ARCH_ESP32
 #include "esp32-hal-log.h"
 #endif
@@ -21,9 +36,8 @@
  * @return The descriptor.  If not present, then nullptr is returned.
  */
 BLEDescriptor* BLEDescriptorMap::getByUUID(const char* uuid) {
-	return getByUUID(BLEUUID(uuid));
+    return getByUUID(BLEUUID(uuid));
 }
-
 
 /**
  * @brief Return the descriptor by UUID.
@@ -31,15 +45,14 @@ BLEDescriptor* BLEDescriptorMap::getByUUID(const char* uuid) {
  * @return The descriptor.  If not present, then nullptr is returned.
  */
 BLEDescriptor* BLEDescriptorMap::getByUUID(BLEUUID uuid) {
-	for (auto &myPair : m_uuidMap) {
-		if (myPair.first->getUUID().equals(uuid)) {
-			return myPair.first;
-		}
-	}
-	//return m_uuidMap.at(uuid.toString());
-	return nullptr;
-} // getByUUID
-
+    for (auto& myPair : m_uuidMap) {
+        if (myPair.first->getUUID().equals(uuid)) {
+            return myPair.first;
+        }
+    }
+    // return m_uuidMap.at(uuid.toString());
+    return nullptr;
+}// getByUUID
 
 /**
  * @brief Return the descriptor by handle.
@@ -47,9 +60,8 @@ BLEDescriptor* BLEDescriptorMap::getByUUID(BLEUUID uuid) {
  * @return The descriptor.
  */
 BLEDescriptor* BLEDescriptorMap::getByHandle(uint16_t handle) {
-	return m_handleMap.at(handle);
-} // getByHandle
-
+    return m_handleMap.at(handle);
+}// getByHandle
 
 /**
  * @brief Set the descriptor by UUID.
@@ -57,11 +69,9 @@ BLEDescriptor* BLEDescriptorMap::getByHandle(uint16_t handle) {
  * @param [in] characteristic The descriptor to cache.
  * @return N/A.
  */
-void BLEDescriptorMap::setByUUID(const char* uuid, BLEDescriptor* pDescriptor){
-	m_uuidMap.insert(std::pair<BLEDescriptor*, std::string>(pDescriptor, uuid));
-} // setByUUID
-
-
+void BLEDescriptorMap::setByUUID(const char* uuid, BLEDescriptor* pDescriptor) {
+    m_uuidMap.insert(std::pair<BLEDescriptor*, std::string>(pDescriptor, uuid));
+}// setByUUID
 
 /**
  * @brief Set the descriptor by UUID.
@@ -70,9 +80,8 @@ void BLEDescriptorMap::setByUUID(const char* uuid, BLEDescriptor* pDescriptor){
  * @return N/A.
  */
 void BLEDescriptorMap::setByUUID(BLEUUID uuid, BLEDescriptor* pDescriptor) {
-	m_uuidMap.insert(std::pair<BLEDescriptor*, std::string>(pDescriptor, uuid.toString()));
-} // setByUUID
-
+    m_uuidMap.insert(std::pair<BLEDescriptor*, std::string>(pDescriptor, uuid.toString()));
+}// setByUUID
 
 /**
  * @brief Set the descriptor by handle.
@@ -81,29 +90,27 @@ void BLEDescriptorMap::setByUUID(BLEUUID uuid, BLEDescriptor* pDescriptor) {
  * @return N/A.
  */
 void BLEDescriptorMap::setByHandle(uint16_t handle, BLEDescriptor* pDescriptor) {
-	m_handleMap.insert(std::pair<uint16_t, BLEDescriptor*>(handle, pDescriptor));
-} // setByHandle
-
+    m_handleMap.insert(std::pair<uint16_t, BLEDescriptor*>(handle, pDescriptor));
+}// setByHandle
 
 /**
  * @brief Return a string representation of the descriptor map.
  * @return A string representation of the descriptor map.
  */
 std::string BLEDescriptorMap::toString() {
-	std::string res;
-	char hex[5];
-	int count = 0;
-	for (auto &myPair : m_uuidMap) {
-		if (count > 0) {res += "\n";}
-		snprintf(hex, sizeof(hex), "%04x", myPair.first->getHandle());
-		count++;
-		res += "handle: 0x";
-		res += hex;
-		res += ", uuid: " + myPair.first->getUUID().toString();
-	}
-	return res;
-} // toString
-
+    std::string res;
+    char hex[5];
+    int count = 0;
+    for (auto& myPair : m_uuidMap) {
+        if (count > 0) { res += "\n"; }
+        snprintf(hex, sizeof(hex), "%04x", myPair.first->getHandle());
+        count++;
+        res += "handle: 0x";
+        res += hex;
+        res += ", uuid: " + myPair.first->getUUID().toString();
+    }
+    return res;
+}// toString
 
 /**
  * @breif Pass the GATT server event onwards to each of the descriptors found in the mapping
@@ -112,37 +119,35 @@ std::string BLEDescriptorMap::toString() {
  * @param [in] param
  */
 void BLEDescriptorMap::handleGATTServerEvent(
-		esp_gatts_cb_event_t      event,
-		esp_gatt_if_t             gatts_if,
-		esp_ble_gatts_cb_param_t* param) {
-	// Invoke the handler for every descriptor we have.
-	for (auto &myPair : m_uuidMap) {
-		myPair.first->handleGATTServerEvent(event, gatts_if, param);
-	}
-} // handleGATTServerEvent
-
+    esp_gatts_cb_event_t event,
+    esp_gatt_if_t gatts_if,
+    esp_ble_gatts_cb_param_t* param) {
+    // Invoke the handler for every descriptor we have.
+    for (auto& myPair : m_uuidMap) {
+        myPair.first->handleGATTServerEvent(event, gatts_if, param);
+    }
+}// handleGATTServerEvent
 
 /**
  * @brief Get the first descriptor in the map.
  * @return The first descriptor in the map.
  */
 BLEDescriptor* BLEDescriptorMap::getFirst() {
-	m_iterator = m_uuidMap.begin();
-	if (m_iterator == m_uuidMap.end()) return nullptr;
-	BLEDescriptor* pRet = m_iterator->first;
-	m_iterator++;
-	return pRet;
-} // getFirst
-
+    m_iterator = m_uuidMap.begin();
+    if (m_iterator == m_uuidMap.end()) return nullptr;
+    BLEDescriptor* pRet = m_iterator->first;
+    m_iterator++;
+    return pRet;
+}// getFirst
 
 /**
  * @brief Get the next descriptor in the map.
  * @return The next descriptor in the map.
  */
 BLEDescriptor* BLEDescriptorMap::getNext() {
-	if (m_iterator == m_uuidMap.end()) return nullptr;
-	BLEDescriptor* pRet = m_iterator->first;
-	m_iterator++;
-	return pRet;
-} // getNext
+    if (m_iterator == m_uuidMap.end()) return nullptr;
+    BLEDescriptor* pRet = m_iterator->first;
+    m_iterator++;
+    return pRet;
+}// getNext
 #endif /* CONFIG_BLUEDROID_ENABLED */
