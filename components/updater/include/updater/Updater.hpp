@@ -13,24 +13,21 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 12.02.23.
+// Created by jadjer on 14.02.23.
 //
 
 
 #pragma once
 
 
-#include <cstdint>
-
-class Distance {
+class Updater {
 public:
-    Distance();
-    ~Distance();
+    Updater();
+    ~Updater();
 
 public:
-    [[nodiscard]] uint64_t getDistance() const;
-    void setDistance(uint64_t distance);
+    [[maybe_unused]] void currentPartitionPrint() const;
 
-private:
-    uint64_t m_distance;
+public:
+    void updateApply();
 };

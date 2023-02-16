@@ -25,7 +25,9 @@
 #include "pump/Pump.hpp"
 #include "timer/Timer.hpp"
 #include "button/Button.hpp"
+#include "updater/Updater.hpp"
 #include "distance/Distance.hpp"
+#include "bluetooth/Bluetooth.hpp"
 #include "power_manager/PowerManager.hpp"
 
 #include <memory>
@@ -56,6 +58,8 @@ private:
     std::unique_ptr<Pump> m_pump;
     std::unique_ptr<Timer> m_timer;
     std::unique_ptr<Button> m_button;
+    std::unique_ptr<Updater> m_updater;
     std::unique_ptr<Distance> m_distance;
+    std::unique_ptr<Bluetooth> m_bluetooth;
     std::unique_ptr<PowerManager> m_powerManager;
 };
