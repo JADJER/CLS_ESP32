@@ -23,14 +23,14 @@
 constexpr auto tag = "Timer";
 
 Timer::Timer() :
-        m_isEnabled(false),
-        m_callback(nullptr),
-        m_delay(60),
-        m_startTime(std::chrono::system_clock::now()) {}
+    m_isEnabled(false),
+    m_callback(nullptr),
+    m_delay(60),
+    m_startTime(std::chrono::system_clock::now()) {}
 
 Timer::~Timer() = default;
 
-void Timer::setCompleteCallback(std::function<void()> const &callback) {
+void Timer::setCompleteCallback(std::function<void()> const& callback) {
     m_callback = callback;
 }
 

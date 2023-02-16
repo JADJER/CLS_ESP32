@@ -19,32 +19,31 @@
 #include "Controller.hpp"
 
 #include <esp_log.h>
+#include <esp_sleep.h>
+#include <esp_task_wdt.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <esp_task_wdt.h>
-#include <esp_sleep.h>
 
 constexpr auto tag = "Controller";
 constexpr auto taskResetPeriodMS = 1000;
 constexpr auto watchdogTimeoutMS = 5000;
 
-Controller::Controller(std::shared_ptr<IConfiguration> const &configuration) :
-        m_pump(std::make_unique<Pump>()),
-        m_timer(std::make_unique<Timer>()),
-        m_button(std::make_unique<Button>()),
-        m_updater(std::make_unique<Updater>()),
-        m_distance(std::make_unique<Distance>()),
-        m_bluetooth(std::make_unique<Bluetooth>("CLS")),
-        m_powerManager(std::make_unique<PowerManager>()) {
-
+Controller::Controller(std::shared_ptr<IConfiguration> const& configuration) :
+    m_pump(std::make_unique<Pump>()),
+    m_timer(std::make_unique<Timer>()),
+    m_button(std::make_unique<Button>()),
+    m_updater(std::make_unique<Updater>()),
+    m_distance(std::make_unique<Distance>()),
+    m_bluetooth(std::make_unique<Bluetooth>("CLS")),
+    m_powerManager(std::make_unique<PowerManager>()) {
     assert(configuration != nullptr);
 
     m_configuration = configuration;
 
     esp_task_wdt_config_t wdtConfig = {
-            .timeout_ms = watchdogTimeoutMS,
-            .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,
-            .trigger_panic = true,
+        .timeout_ms = watchdogTimeoutMS,
+        .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,
+        .trigger_panic = true,
     };
 
     esp_task_wdt_init(&wdtConfig);
@@ -83,7 +82,7 @@ void Controller::spinOnce() {
     lubricateFromTimer();
 
     m_timer->spinOnce();
-//    m_bluetooth->spinOnce();
+    //    m_bluetooth->spinOnce();
 }
 
 void Controller::sleep() {

@@ -16,21 +16,20 @@
 // Created by jadjer on 10.02.23.
 //
 
-
 #pragma once
 
-#include <memory>
 #include <chrono>
+#include <memory>
 
 class IConfiguration {
-public:
+   public:
     virtual ~IConfiguration() = default;
 
-public:
+   public:
     [[nodiscard]] virtual bool isLubricateFromTimer() const = 0;
     [[nodiscard]] virtual bool isLubricateFromDistance() const = 0;
 
-public:
+   public:
     [[nodiscard]] virtual uint64_t getLimitDistance() const = 0;
     [[nodiscard]] virtual std::chrono::seconds getPumpTimeoutEnable() const = 0;
     [[nodiscard]] virtual std::chrono::seconds getPumpTimeoutDisable() const = 0;

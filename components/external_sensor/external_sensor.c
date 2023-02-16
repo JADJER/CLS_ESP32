@@ -22,13 +22,13 @@
 #include <esp_log.h>
 
 #define EXTERNAL_SENSOR_PIN CONFIG_EXTERNAL_SENSOR_PIN
-#define EXTERNAL_SENSOR_SEL (1ULL<<EXTERNAL_SENSOR_PIN)
+#define EXTERNAL_SENSOR_SEL (1ULL << EXTERNAL_SENSOR_PIN)
 
 static const char* TAG = "external sensor";
 
 static bool is_init = false;
 
-static void gpio_isr_handler(void *arg) {
+static void gpio_isr_handler(void* arg) {
     printf("external pin interrupt");
 }
 
@@ -40,27 +40,26 @@ esp_err_t external_sensor_init(void) {
     }
 
     gpio_config_t io_conf = {
-            .intr_type = GPIO_INTR_LOW_LEVEL,
-            .pin_bit_mask = EXTERNAL_SENSOR_SEL,
-            .mode = GPIO_MODE_INPUT,
-            .pull_up_en = GPIO_PULLUP_ENABLE,
-            .pull_down_en = GPIO_PULLDOWN_DISABLE
-    };
+        .intr_type = GPIO_INTR_LOW_LEVEL,
+        .pin_bit_mask = EXTERNAL_SENSOR_SEL,
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE};
 
     err = gpio_config(&io_conf);
     if (err != ESP_OK) {
         return err;
     }
 
-//    err = gpio_install_isr_service(ESP_INTR_FLAG_SHARED);
-//    if (err != ESP_OK) {
-//        return err;
-//    }
+    //    err = gpio_install_isr_service(ESP_INTR_FLAG_SHARED);
+    //    if (err != ESP_OK) {
+    //        return err;
+    //    }
 
-//    err = gpio_isr_handler_add(EXTERNAL_POWER_PIN, gpio_isr_handler, NULL);
-//    if (err != ESP_OK) {
-//        return err;
-//    }
+    //    err = gpio_isr_handler_add(EXTERNAL_POWER_PIN, gpio_isr_handler, NULL);
+    //    if (err != ESP_OK) {
+    //        return err;
+    //    }
 
     is_init = true;
     return err;
@@ -75,7 +74,6 @@ uint8_t extenal_sensor_is_enabled(void) {
     return is_powered;
 }
 
-//void sleep(void) {
+// void sleep(void) {
 //
-//}
-
+// }

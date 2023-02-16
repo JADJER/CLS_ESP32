@@ -58,14 +58,10 @@ void Updater::updateApply() {
     ESP_LOGI(tag, "Diagnostics completed successfully! Continuing execution.");
     esp_ota_mark_app_valid_cancel_rollback();
 
-//    if (run_diagnostics()) {
-//
-//    } else {
-//        ESP_LOGE(tag, "Diagnostics failed! Start rollback to the previous version.");
-//        esp_ota_mark_app_invalid_rollback_and_reboot();
-//    }
+    //    if (run_diagnostics()) {
+    //
+    //    } else {
+    //        ESP_LOGE(tag, "Diagnostics failed! Start rollback to the previous version.");
+    //        esp_ota_mark_app_invalid_rollback_and_reboot();
+    //    }
 }
-
-
-
-

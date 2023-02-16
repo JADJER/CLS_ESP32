@@ -16,11 +16,10 @@
 // Created by jadjer on 06.02.23.
 //
 
-
 #pragma once
 
-#include <esp_err.h>
 #include <driver/gpio.h>
+#include <esp_err.h>
 
 /**
  * @enum PumpState
@@ -35,7 +34,7 @@ enum PumpState {
  * @class Pump
  */
 class Pump {
-public:
+   public:
     /**
      * @brief Default constructor
      */
@@ -45,7 +44,7 @@ public:
      */
     ~Pump();
 
-public:
+   public:
     /**
      * @brief Pump power enable
      */
@@ -55,7 +54,7 @@ public:
      */
     void disable();
 
-public:
+   public:
     /**
      * @brief Get current pump state
      * @return PumpState
@@ -77,7 +76,7 @@ public:
      */
     [[nodiscard]] bool inError() const;
 
-private:
+   private:
     PumpState m_state;
     gpio_num_t m_controlPin;
     gpio_num_t m_feedbackPin;

@@ -16,34 +16,32 @@
 // Created by jadjer on 09.02.23.
 //
 
-
 #pragma once
 
-#include "configuration/IConfiguration.hpp"
+#include "bluetooth/Bluetooth.hpp"
+#include "button/Button.hpp"
 #include "configuration/Configuration.hpp"
-
+#include "configuration/IConfiguration.hpp"
+#include "distance/Distance.hpp"
+#include "power_manager/PowerManager.hpp"
 #include "pump/Pump.hpp"
 #include "timer/Timer.hpp"
-#include "button/Button.hpp"
 #include "updater/Updater.hpp"
-#include "distance/Distance.hpp"
-#include "bluetooth/Bluetooth.hpp"
-#include "power_manager/PowerManager.hpp"
 
 #include <memory>
 
 class Controller {
-public:
+   public:
     explicit Controller(IConfigurationPtr const& configuration);
     ~Controller();
 
-public:
+   public:
     [[noreturn]] void spin();
 
-public:
+   public:
     void spinOnce();
 
-private:
+   private:
     void sleep();
     void lubricateFromDistance();
     void lubricateFromTimer();
@@ -51,10 +49,10 @@ private:
     void pumpStop();
     void pumpManual();
 
-private:
+   private:
     IConfigurationPtr m_configuration;
 
-private:
+   private:
     std::unique_ptr<Pump> m_pump;
     std::unique_ptr<Timer> m_timer;
     std::unique_ptr<Button> m_button;

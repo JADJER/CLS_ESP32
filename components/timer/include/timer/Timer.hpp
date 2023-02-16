@@ -16,7 +16,6 @@
 // Created by jadjer on 10.02.23.
 //
 
-
 #pragma once
 
 #include <chrono>
@@ -28,7 +27,7 @@
 class Timer {
     using Callback = std::function<void()>;
 
-public:
+   public:
     /**
      * Default constructor
      */
@@ -38,14 +37,14 @@ public:
      */
     ~Timer();
 
-public:
+   public:
     /**
      * Callback
      * @param callback
      */
-    void setCompleteCallback(Callback const &callback);
+    void setCompleteCallback(Callback const& callback);
 
-public:
+   public:
     /**
      * Timer start
      * @param delay Timer disable after time
@@ -56,20 +55,20 @@ public:
      */
     void stop();
 
-public:
+   public:
     /**
      * Is timer enabled
      * @return True if enabled, otherwise false
      */
     [[nodiscard]] bool isEnabled() const;
 
-public:
+   public:
     /**
      * @brief Timer control logic spin
      */
     void spinOnce();
 
-protected:
+   protected:
     bool m_isEnabled;
     Callback m_callback;
     std::chrono::seconds m_delay;

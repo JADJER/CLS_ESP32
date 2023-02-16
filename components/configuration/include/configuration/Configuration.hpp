@@ -16,23 +16,22 @@
 // Created by jadjer on 09.02.23.
 //
 
-
 #pragma once
-
-#include <esp_err.h>
 
 #include "IConfiguration.hpp"
 
+#include <esp_err.h>
+
 class Configuration : public IConfiguration {
-public:
+   public:
     Configuration();
     ~Configuration() override;
 
-public:
+   public:
     [[nodiscard]] bool isLubricateFromTimer() const override;
     [[nodiscard]] bool isLubricateFromDistance() const override;
 
-public:
+   public:
     [[nodiscard]] uint64_t getLimitDistance() const override;
     [[nodiscard]] std::chrono::seconds getPumpTimeoutEnable() const override;
     [[nodiscard]] std::chrono::seconds getPumpTimeoutDisable() const override;

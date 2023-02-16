@@ -16,18 +16,16 @@
 // Created by jadjer on 14.02.23.
 //
 
-
 #pragma once
 
-
 class Updater {
-public:
+   public:
     Updater();
     ~Updater();
 
-public:
+   public:
     [[maybe_unused]] void currentPartitionPrint() const;
 
-public:
+   public:
     void updateApply();
 };

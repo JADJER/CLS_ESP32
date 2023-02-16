@@ -16,21 +16,19 @@
 // Created by jadjer on 12.02.23.
 //
 
-
 #pragma once
-
 
 #include <cstdint>
 
 class Distance {
-public:
+   public:
     Distance();
     ~Distance();
 
-public:
+   public:
     [[nodiscard]] uint64_t getDistance() const;
     void setDistance(uint64_t distance);
 
-private:
+   private:
     uint64_t m_distance;
 };

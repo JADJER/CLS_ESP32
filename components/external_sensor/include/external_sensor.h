@@ -16,11 +16,10 @@
 // Created by jadjer on 03.02.23.
 //
 
-
 #pragma once
 
-#include <stdbool.h>
 #include <esp_err.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,7 +40,7 @@ uint8_t extenal_sensor_is_enabled(void);
 /**
  *
  */
-//void sleep(void);
+// void sleep(void);
 
 #ifdef __cplusplus
 }

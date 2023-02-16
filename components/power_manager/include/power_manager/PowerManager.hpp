@@ -16,7 +16,6 @@
 // Created by jadjer on 09.02.23.
 //
 
-
 #pragma once
 
 #include <driver/gpio.h>
@@ -25,7 +24,7 @@
  * @class PowerManager
  */
 class PowerManager {
-public:
+   public:
     /**
      * Default constructor
      */
@@ -35,14 +34,14 @@ public:
      */
     ~PowerManager();
 
-public:
+   public:
     /**
      * Check if power is enabled
      * @return True if enabled. false is disabled
      */
     [[nodiscard]] bool isEnabled() const;
 
-private:
+   private:
     gpio_num_t m_powerPin;
     uint8_t m_powerPinEnableLevel;
 };

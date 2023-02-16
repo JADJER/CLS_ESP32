@@ -18,8 +18,8 @@
 
 #include "bluetooth/BLEAddress.h"
 
-#include <string>
 #include <sstream>
+#include <string>
 
 BLEAddress::BLEAddress(esp_bd_addr_t const& address) :
     m_address() {

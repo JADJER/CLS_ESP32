@@ -24,15 +24,14 @@
 constexpr auto tag = "Power manager";
 
 PowerManager::PowerManager() :
-        m_powerPin(static_cast<gpio_num_t>(CONFIG_EXTERNAL_POWER_PIN)),
-        m_powerPinEnableLevel(1) {
-
+    m_powerPin(static_cast<gpio_num_t>(CONFIG_EXTERNAL_POWER_PIN)),
+    m_powerPinEnableLevel(1) {
     gpio_config_t io_conf = {
-            .pin_bit_mask = (1ULL << m_powerPin),
-            .mode = GPIO_MODE_INPUT,
-            .pull_up_en = GPIO_PULLUP_ENABLE,
-            .pull_down_en = GPIO_PULLDOWN_DISABLE,
-            .intr_type = GPIO_INTR_LOW_LEVEL,
+        .pin_bit_mask = (1ULL << m_powerPin),
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_LOW_LEVEL,
     };
 
 #if CONFIG_EXTERNAL_POWER_PIN_INVERTED

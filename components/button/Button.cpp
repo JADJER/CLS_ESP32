@@ -18,21 +18,20 @@
 
 #include "button/Button.hpp"
 
-#include <esp_log.h>
 #include <driver/gpio.h>
+#include <esp_log.h>
 
 constexpr auto tag = "Button";
 
 Button::Button() :
-        m_buttonPin(static_cast<gpio_num_t>(CONFIG_BUTTON_PIN)),
-        m_buttonPinEnableLevel(1) {
-
+    m_buttonPin(static_cast<gpio_num_t>(CONFIG_BUTTON_PIN)),
+    m_buttonPinEnableLevel(1) {
     gpio_config_t io_conf = {
-            .pin_bit_mask = (1ULL << m_buttonPin),
-            .mode = GPIO_MODE_INPUT,
-            .pull_up_en = GPIO_PULLUP_ENABLE,
-            .pull_down_en = GPIO_PULLDOWN_DISABLE,
-            .intr_type = GPIO_INTR_DISABLE,
+        .pin_bit_mask = (1ULL << m_buttonPin),
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
     };
 
 #if CONFIG_BUTTON_PIN_INVERTED

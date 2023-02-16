@@ -24,16 +24,15 @@
 constexpr auto tag = "Pump";
 
 Pump::Pump() :
-        m_state(PumpState::PUMP_DISABLED),
-        m_controlPin(static_cast<gpio_num_t>(CONFIG_PUMP_CONTROL_PIN)),
-        m_feedbackPin(static_cast<gpio_num_t>(CONFIG_PUMP_FEEDBACK_PIN)) {
-
+    m_state(PumpState::PUMP_DISABLED),
+    m_controlPin(static_cast<gpio_num_t>(CONFIG_PUMP_CONTROL_PIN)),
+    m_feedbackPin(static_cast<gpio_num_t>(CONFIG_PUMP_FEEDBACK_PIN)) {
     gpio_config_t ioConf = {
-            .pin_bit_mask = (1ULL << m_controlPin),
-            .mode = GPIO_MODE_OUTPUT,
-            .pull_up_en = GPIO_PULLUP_DISABLE,
-            .pull_down_en = GPIO_PULLDOWN_DISABLE,
-            .intr_type = GPIO_INTR_DISABLE,
+        .pin_bit_mask = (1ULL << m_controlPin),
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
     };
 
     ESP_ERROR_CHECK(gpio_config(&ioConf));

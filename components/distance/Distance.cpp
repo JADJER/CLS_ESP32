@@ -19,7 +19,7 @@
 #include "distance/Distance.hpp"
 
 Distance::Distance() :
-        m_distance(0) {}
+    m_distance(0) {}
 
 Distance::~Distance() = default;
 

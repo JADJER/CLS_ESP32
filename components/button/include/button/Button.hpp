@@ -16,7 +16,6 @@
 // Created by jadjer on 13.02.23.
 //
 
-
 #pragma once
 
 #include <driver/gpio.h>
@@ -25,7 +24,7 @@
  * @class Button
  */
 class Button {
-public:
+   public:
     /**
      * Default constructor
      */
@@ -35,14 +34,14 @@ public:
      */
     ~Button();
 
-public:
+   public:
     /**
      * Check if button has been pressed
      * @return True if pressed, otherwise false
      */
     [[nodiscard]] bool isPressed() const;
 
-private:
+   private:
     gpio_num_t m_buttonPin;
     uint8_t m_buttonPinEnableLevel;
 };
