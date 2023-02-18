@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 
 set(SOURCES
-        Updater.cpp)
+        updater.c)
 
 set(COMPONENTS
         app_update)

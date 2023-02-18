@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 
 set(SOURCES
-        PowerManager.cpp)
+        power_manager.c)
 
 set(COMPONENTS
         driver)

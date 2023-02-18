@@ -6,7 +6,7 @@ project(CLS
         VERSION 0.4.1
         DESCRIPTION "Chain lubrication system"
         HOMEPAGE_URL https://github.com/jadjer/CLS_ESP32
-        LANGUAGES CXX)
+        LANGUAGES C)
 
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_C_STANDARD 23)
+set(CMAKE_C_STANDARD_REQUIRED True)
