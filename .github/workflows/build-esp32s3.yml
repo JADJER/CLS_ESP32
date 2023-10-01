@@ -1,0 +1,23 @@
+name: Build and Artifact the ESP-IDF Project
+
+on:
+  push:
+    tags:
+     - 'v*'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: esp-idf build
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.1.1
+          target: esp32s3
+          path: 'esp32-s3-cls'
