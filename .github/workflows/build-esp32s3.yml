@@ -28,7 +28,6 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: build/CLS.bin
-          asset_name: CLS.bin
+          asset_name: esp32_s3_cls.bin
           tag: ${{ github.ref }}
           overwrite: true
-          body: "Firmware for ESP32 S3"
