@@ -24,27 +24,44 @@
 
 #include "Pump.hpp"
 #include "Timer.hpp"
+#include "DistanceSensor.hpp"
 #include "ExternalPower.hpp"
 
 using namespace std::chrono_literals;
+
+constexpr auto pumpWorkTime = 60s;
+constexpr auto pumpEnableDelay = 10min;
+constexpr auto pumpEnableDistance_InKilometers = 200;
 
 extern "C" void app_main()
 {
     auto pumpPtr = std::make_shared<Pump>();
 
     auto timerDelayPtr = std::make_shared<Timer>();
-    timerDelayPtr->setCallback([&]() { pumpPtr->enable(60s); });
+    timerDelayPtr->setCallback([&]() { pumpPtr->enable(pumpWorkTime); });
+
+    auto distanceSensorPtr = std::make_shared<DistanceSensor>();
+    distanceSensorPtr->setCallback(
+        [&](float const distance_InKilometers)
+        {
+            if (distance_InKilometers < pumpEnableDistance_InKilometers)
+            {
+                return;
+            }
+
+            pumpPtr->enable(pumpWorkTime);
+        });
 
     auto externalPowerPtr = std::make_shared<ExternalPower>();
     externalPowerPtr->setCallback(
-        [&](ExternalPowerState externalPowerState)
+        [&](ExternalPowerState const externalPowerState)
         {
             if (externalPowerState == EXTERNAL_POWER_ON)
             {
                 std::cout << "External power ON" << std::endl;
 
-                pumpPtr->enable(60s);
-                timerDelayPtr->start(10min);
+                pumpPtr->enable(pumpWorkTime);
+                timerDelayPtr->start(pumpEnableDelay);
             }
 
             if (externalPowerState == EXTERNAL_POWER_OFF)
@@ -57,6 +74,7 @@ extern "C" void app_main()
     auto executorPtr = std::make_unique<executor::Executor>();
     executorPtr->addNode(pumpPtr);
     executorPtr->addNode(timerDelayPtr);
+    executorPtr->addNode(distanceSensorPtr);
     executorPtr->addNode(externalPowerPtr);
     executorPtr->spin();
 }
