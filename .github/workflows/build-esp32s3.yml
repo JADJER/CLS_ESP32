@@ -7,7 +7,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -20,4 +19,4 @@ jobs:
         with:
           esp_idf_version: v5.1.1
           target: esp32s3
-          path: 'esp32-s3-cls'
+          path: '.'
