@@ -13,20 +13,35 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 09.02.23.
+// Created by jadjer on 01.10.23.
 //
 
 #pragma once
 
-#include <esp_err.h>
+#include <chrono>
 
-/**
- * Init
- */
-esp_err_t power_manager_init(void);
+#include "executor/Node.hpp"
+#include "gpio/interface/IPin.hpp"
 
-/**
- * Check if power is enabled
- * @return True if enabled. false is disabled
- */
-uint8_t power_manager_is_enabled(void);
+using MicroSeconds = std::chrono::microseconds;
+using TimePoint = std::chrono::system_clock::time_point;
+
+class Pump : public executor::Node
+{
+public:
+    Pump();
+    ~Pump() override = default;
+
+public:
+    void enable(MicroSeconds delay);
+    void disable();
+
+private:
+    void process() override;
+
+private:
+    bool m_enable;
+    IPinPtr m_pumpPin;
+    MicroSeconds m_delay;
+    TimePoint m_startTime;
+};
