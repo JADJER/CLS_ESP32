@@ -28,6 +28,6 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: build/CLS.bin
-          asset_name: esp32_s3_cls_$tag.bin
+          asset_name: esp32-s3-cls-$tag.bin
           tag: ${{ github.ref }}
           overwrite: true
