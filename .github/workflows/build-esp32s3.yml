@@ -7,16 +7,28 @@ on:
 
 jobs:
   build:
+    name: Publish binaries
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: 'recursive'
+
       - name: esp-idf build
         uses: espressif/esp-idf-ci-action@v1
         with:
           esp_idf_version: v5.1.1
           target: esp32s3
           path: '.'
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/CLS.bin
+          asset_name: CLS.bin
+          tag: ${{ github.ref }}
+          overwrite: true
+          body: "Firmware for ESP32 S3"
