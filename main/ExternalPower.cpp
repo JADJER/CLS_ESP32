@@ -20,9 +20,10 @@
 
 #include <cassert>
 
-#include "gpio/Pin.hpp"
+#include "gpio/InputPin.hpp"
 
-ExternalPower::ExternalPower() : m_externalPowerPin(std::make_unique<gpio::Pin>(8, gpio::PIN_LEVEL_HIGH))
+ExternalPower::ExternalPower(uint8_t const numberOfPin, PinState const defaultLevel) :
+    m_externalPowerPin(std::make_unique<gpio::InputPin>(numberOfPin, defaultLevel))
 {
     assert(EXTERNAL_POWER_COUNT == 2);
 }

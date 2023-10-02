@@ -4,13 +4,13 @@
 
 #include "DistanceSensor.hpp"
 
-#include "gpio/Pin.hpp"
+#include "gpio/InputPin.hpp"
 
 constexpr float wheelLength_InMeters = 1.2;
 constexpr float wheelLength_InKilometers = wheelLength_InMeters / 1000;
 
-DistanceSensor::DistanceSensor() :
-    m_distance(0), m_distanceSensorPin(std::make_unique<gpio::Pin>(18, gpio::PIN_LEVEL_LOW)), m_distanceSensorState()
+DistanceSensor::DistanceSensor(uint8_t const numberOfPin, PinState const defaultLevel) :
+    m_distance(0), m_distanceSensorState(), m_distanceSensorPin(std::make_unique<gpio::InputPin>(numberOfPin, defaultLevel))
 {
 }
 

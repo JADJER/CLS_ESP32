@@ -21,7 +21,8 @@
 #include <functional>
 
 #include "executor/Node.hpp"
-#include "gpio/interface/IPin.hpp"
+#include "gpio/PinLevel.hpp"
+#include "gpio/interface/IInputPin.hpp"
 
 using PinState = gpio::PinLevel;
 using DistanceSensorCallbackFunction = std::function<void(float)>;
@@ -29,7 +30,7 @@ using DistanceSensorCallbackFunction = std::function<void(float)>;
 class DistanceSensor : public executor::Node
 {
 public:
-    DistanceSensor();
+    DistanceSensor(uint8_t numberOfPin, PinState defaultLevel);
     ~DistanceSensor() override = default;
 
 public:
@@ -43,6 +44,6 @@ private:
 
 private:
     float m_distance;
-    IPinPtr m_distanceSensorPin;
     PinState m_distanceSensorState;
+    IInputPinPtr<PinState> m_distanceSensorPin;
 };

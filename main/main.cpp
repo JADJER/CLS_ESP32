@@ -29,18 +29,23 @@
 
 using namespace std::chrono_literals;
 
-constexpr auto pumpWorkTime = 60s;
-constexpr auto pumpEnableDelay = 10min;
-constexpr auto pumpEnableDistance_InKilometers = 200;
+constexpr const uint8_t numberOfPumpPowerPin = 16;
+constexpr const uint8_t numberOfDistanceSensorPin = 18;
+constexpr const uint8_t numberOfExternalPowerPin = 8;
+
+constexpr const auto pumpWorkTime = 60s;
+constexpr const auto pumpEnableDelay = 10min;
+constexpr const auto pumpEnableDistance_InKilometers = 200;
 
 extern "C" void app_main()
 {
-    auto pumpPtr = std::make_shared<Pump>();
+    auto pumpPtr = std::make_shared<Pump>(numberOfPumpPowerPin, gpio::PIN_LEVEL_HIGH);
+    pumpPtr->enable(pumpWorkTime);
 
     auto timerDelayPtr = std::make_shared<Timer>();
     timerDelayPtr->setCallback([&]() { pumpPtr->enable(pumpWorkTime); });
 
-    auto distanceSensorPtr = std::make_shared<DistanceSensor>();
+    auto distanceSensorPtr = std::make_shared<DistanceSensor>(numberOfDistanceSensorPin, gpio::PIN_LEVEL_HIGH);
     distanceSensorPtr->setCallback(
         [&](float const distance_InKilometers)
         {
@@ -52,7 +57,7 @@ extern "C" void app_main()
             pumpPtr->enable(pumpWorkTime);
         });
 
-    auto externalPowerPtr = std::make_shared<ExternalPower>();
+    auto externalPowerPtr = std::make_shared<ExternalPower>(numberOfExternalPowerPin, gpio::PIN_LEVEL_HIGH);
     externalPowerPtr->setCallback(
         [&](ExternalPowerState const externalPowerState)
         {
