@@ -50,8 +50,8 @@ void Pump::process()
         return;
     }
 
-    auto currentTime = std::chrono::system_clock::now();
-    auto diffTime = std::chrono::duration_cast<MicroSeconds>(currentTime - m_startTime);
+    auto const currentTime = std::chrono::system_clock::now();
+    auto const diffTime = std::chrono::duration_cast<MicroSeconds>(currentTime - m_startTime);
     if (diffTime < m_delay)
     {
         return;

@@ -40,7 +40,7 @@ void ExternalPower::process()
         return;
     }
 
-    auto externalPowerLevel = m_externalPowerPin->getLevel();
+    auto const externalPowerLevel = m_externalPowerPin->getLevel();
 
     if (externalPowerLevel == gpio::PIN_LEVEL_HIGH)
     {

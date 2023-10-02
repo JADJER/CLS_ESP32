@@ -6,8 +6,8 @@
 
 #include "gpio/InputPin.hpp"
 
-constexpr float wheelLength_InMeters = 1.2;
-constexpr float wheelLength_InKilometers = wheelLength_InMeters / 1000;
+constexpr float const wheelLength_InMeters = 1.2;
+constexpr float const wheelLength_InKilometers = wheelLength_InMeters / 1000;
 
 DistanceSensor::DistanceSensor(uint8_t const numberOfPin, PinState const defaultLevel) :
     m_distance(0), m_distanceSensorState(), m_distanceSensorPin(std::make_unique<gpio::InputPin>(numberOfPin, defaultLevel))
