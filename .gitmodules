@@ -1,6 +1,6 @@
-[submodule "components/executor"]
-	path = components/executor
-	url = https://github.com/jadjer/esp-executor.git
-[submodule "components/gpio"]
-	path = components/gpio
-	url = https://github.com/jadjer/esp-gpio.git
+[submodule "components/esp-executor"]
+	path = components/esp-executor
+	url = ../esp-executor.git
+[submodule "components/esp-gpio"]
+	path = components/esp-gpio
+	url = ../esp-gpio.git
