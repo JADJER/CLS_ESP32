@@ -1,6 +1,6 @@
 [submodule "components/esp32-executor"]
 	path = components/esp32-executor
-	url = ../../esp32-executor.git
+	url = https://github.com/jadjer/esp32-executor.git
 [submodule "components/esp32-gpio"]
 	path = components/esp32-gpio
-	url = ../../esp32-gpio.git
+	url = https://github.com/jadjer/esp32-gpio.git
