@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.17)
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 project(chain_lubrication_system
-        VERSION 0.5.6
+        VERSION 0.5.7
         DESCRIPTION "Chain lubrication system for motorcycles"
         HOMEPAGE_URL https://github.com/jadjer/chain-lubrication-system.git
         LANGUAGES CXX)
