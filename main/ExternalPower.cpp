@@ -23,7 +23,7 @@
 #include "gpio/InputPin.hpp"
 
 ExternalPower::ExternalPower(uint8_t const numberOfPin, PinState const defaultLevel) :
-    m_externalPowerPin(std::make_unique<gpio::InputPin>(numberOfPin, defaultLevel))
+    m_externalPowerLastLevel(defaultLevel), m_externalPowerPin(std::make_unique<gpio::InputPin>(numberOfPin, defaultLevel))
 {
     assert(EXTERNAL_POWER_COUNT == 2);
 }
@@ -40,15 +40,21 @@ void ExternalPower::process()
         return;
     }
 
-    auto const externalPowerLevel = m_externalPowerPin->getLevel();
+    auto const externalPowerCurrentLevel = m_externalPowerPin->getLevel();
+    if (externalPowerCurrentLevel == m_externalPowerLastLevel)
+    {
+        return;
+    }
 
-    if (externalPowerLevel == gpio::PIN_LEVEL_HIGH)
+    if (externalPowerCurrentLevel == gpio::PIN_LEVEL_HIGH)
     {
         m_callback(EXTERNAL_POWER_OFF);
     }
 
-    if (externalPowerLevel == gpio::PIN_LEVEL_LOW)
+    if (externalPowerCurrentLevel == gpio::PIN_LEVEL_LOW)
     {
         m_callback(EXTERNAL_POWER_ON);
     }
+
+    m_externalPowerLastLevel = externalPowerCurrentLevel;
 }
