@@ -21,15 +21,17 @@
 #include <chrono>
 
 #include "executor/Node.hpp"
-#include "gpio/interface/IPin.hpp"
+#include "gpio/PinLevel.hpp"
+#include "gpio/interface/IOutputPin.hpp"
 
+using PinState = gpio::PinLevel;
 using MicroSeconds = std::chrono::microseconds;
 using TimePoint = std::chrono::system_clock::time_point;
 
 class Pump : public executor::Node
 {
 public:
-    Pump();
+    Pump(uint8_t numberOfPin, PinState defaultLevel);
     ~Pump() override = default;
 
 public:
@@ -41,7 +43,7 @@ private:
 
 private:
     bool m_enable;
-    IPinPtr m_pumpPin;
     MicroSeconds m_delay;
     TimePoint m_startTime;
+    IOutputPinPtr<PinState> m_pumpPin;
 };

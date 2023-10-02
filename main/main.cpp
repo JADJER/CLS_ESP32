@@ -18,7 +18,6 @@
 
 #include <memory>
 #include <chrono>
-#include <iostream>
 
 #include "executor/Executor.hpp"
 
@@ -29,18 +28,24 @@
 
 using namespace std::chrono_literals;
 
-constexpr auto pumpWorkTime = 60s;
-constexpr auto pumpEnableDelay = 10min;
-constexpr auto pumpEnableDistance_InKilometers = 200;
+constexpr const uint8_t numberOfPumpPowerPin = 16;
+constexpr const uint8_t numberOfDistanceSensorPin = 18;
+constexpr const uint8_t numberOfExternalPowerPin = 8;
+
+constexpr const auto pumpStartTime = 10s;
+constexpr const auto pumpWorkTime = 60s;
+constexpr const auto pumpEnableDelay = 30min;
+constexpr const auto pumpEnableDistance_InKilometers = 100;
 
 extern "C" void app_main()
 {
-    auto pumpPtr = std::make_shared<Pump>();
+    auto pumpPtr = std::make_shared<Pump>(numberOfPumpPowerPin, gpio::PIN_LEVEL_HIGH);
+    pumpPtr->enable(pumpStartTime);
 
     auto timerDelayPtr = std::make_shared<Timer>();
     timerDelayPtr->setCallback([&]() { pumpPtr->enable(pumpWorkTime); });
 
-    auto distanceSensorPtr = std::make_shared<DistanceSensor>();
+    auto distanceSensorPtr = std::make_shared<DistanceSensor>(numberOfDistanceSensorPin, gpio::PIN_LEVEL_HIGH);
     distanceSensorPtr->setCallback(
         [&](float const distance_InKilometers)
         {
@@ -52,21 +57,18 @@ extern "C" void app_main()
             pumpPtr->enable(pumpWorkTime);
         });
 
-    auto externalPowerPtr = std::make_shared<ExternalPower>();
+    auto externalPowerPtr = std::make_shared<ExternalPower>(numberOfExternalPowerPin, gpio::PIN_LEVEL_HIGH);
     externalPowerPtr->setCallback(
         [&](ExternalPowerState const externalPowerState)
         {
             if (externalPowerState == EXTERNAL_POWER_ON)
             {
-                std::cout << "External power ON" << std::endl;
-
-                pumpPtr->enable(pumpWorkTime);
-                timerDelayPtr->start(pumpEnableDelay);
+                pumpPtr->enable(pumpStartTime);
+                timerDelayPtr->start(pumpEnableDelay, true);
             }
 
             if (externalPowerState == EXTERNAL_POWER_OFF)
             {
-                std::cout << "External power OFF" << std::endl;
                 timerDelayPtr->stop();
             }
         });

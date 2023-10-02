@@ -25,7 +25,7 @@ void Timer::setCallback(TimeoutCallbackFunction const& timeoutCallbackFunction)
     m_timeoutCallbackFunction = timeoutCallbackFunction;
 }
 
-void Timer::start(MicroSeconds delay, bool autoRepeat)
+void Timer::start(MicroSeconds const delay, bool const autoRepeat)
 {
     m_delay = delay;
     m_startTime = std::chrono::system_clock::now();
@@ -51,8 +51,8 @@ void Timer::process()
         return;
     }
 
-    auto currentTime = std::chrono::system_clock::now();
-    auto diffTime = std::chrono::duration_cast<MicroSeconds>(currentTime - m_startTime);
+    auto const currentTime = std::chrono::system_clock::now();
+    auto const diffTime = std::chrono::duration_cast<MicroSeconds>(currentTime - m_startTime);
     if (diffTime < m_delay)
     {
         return;

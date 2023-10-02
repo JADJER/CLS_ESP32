@@ -21,7 +21,8 @@
 #include <functional>
 
 #include "executor/Node.hpp"
-#include "gpio/interface/IPin.hpp"
+#include "gpio/PinLevel.hpp"
+#include "gpio/interface/IInputPin.hpp"
 
 enum ExternalPowerState {
     EXTERNAL_POWER_ON = 0,
@@ -29,11 +30,12 @@ enum ExternalPowerState {
     EXTERNAL_POWER_COUNT = 2
 };
 
+using PinState = gpio::PinLevel;
 using ExternalPowerCallbackFunction = std::function<void(ExternalPowerState)>;
 
 class ExternalPower : public executor::Node {
    public:
-    ExternalPower();
+    ExternalPower(uint8_t numberOfPin, PinState defaultLevel);
     ~ExternalPower() override = default;
 
 public:
@@ -46,5 +48,5 @@ private:
     ExternalPowerCallbackFunction m_callback = nullptr;
 
    private:
-    std::unique_ptr<gpio::interface::IPin> m_externalPowerPin;
+    IInputPinPtr<PinState> m_externalPowerPin;
 };

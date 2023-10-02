@@ -20,9 +20,12 @@
 
 #include <chrono>
 
-#include "gpio/Pin.hpp"
+#include "gpio/OutputPin.hpp"
 
-Pump::Pump() : m_enable(false), m_pumpPin(std::make_unique<gpio::Pin>(16, gpio::PIN_LEVEL_LOW)), m_delay(), m_startTime() {}
+Pump::Pump(uint8_t const numberOfPin, PinState const defaultLevel) :
+    m_enable(false), m_delay(), m_startTime(), m_pumpPin(std::make_unique<gpio::OutputPin>(numberOfPin, defaultLevel))
+{
+}
 
 void Pump::enable(MicroSeconds delay)
 {
@@ -47,8 +50,8 @@ void Pump::process()
         return;
     }
 
-    auto currentTime = std::chrono::system_clock::now();
-    auto diffTime = std::chrono::duration_cast<MicroSeconds>(currentTime - m_startTime);
+    auto const currentTime = std::chrono::system_clock::now();
+    auto const diffTime = std::chrono::duration_cast<MicroSeconds>(currentTime - m_startTime);
     if (diffTime < m_delay)
     {
         return;
