@@ -30,7 +30,7 @@ using DistanceSensorCallbackFunction = std::function<void(float)>;
 class DistanceSensor : public executor::Node
 {
 public:
-    DistanceSensor(uint8_t numberOfPin, PinState defaultLevel);
+    DistanceSensor();
     ~DistanceSensor() override = default;
 
 public:
