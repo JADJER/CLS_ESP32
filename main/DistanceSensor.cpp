@@ -6,11 +6,14 @@
 
 #include "gpio/InputPin.hpp"
 
+constexpr const uint8_t numberOfDistanceSensorPin = 18;
+
 constexpr float const wheelLength_InMeters = 1.2;
 constexpr float const wheelLength_InKilometers = wheelLength_InMeters / 1000;
 
-DistanceSensor::DistanceSensor(uint8_t const numberOfPin, PinState const defaultLevel) :
-    m_distance(0), m_distanceSensorState(), m_distanceSensorPin(std::make_unique<gpio::InputPin>(numberOfPin, defaultLevel))
+DistanceSensor::DistanceSensor() :
+    m_distance(0), m_distanceSensorState(gpio::PIN_LEVEL_UNKNOWN),
+    m_distanceSensorPin(std::make_unique<gpio::InputPin>(numberOfDistanceSensorPin, gpio::PIN_LEVEL_HIGH))
 {
 }
 
@@ -27,15 +30,19 @@ void DistanceSensor::process()
     }
 
     auto const distanceSensorLevel = m_distanceSensorPin->getLevel();
-    if (m_distanceSensorState != distanceSensorLevel)
+    if (distanceSensorLevel == m_distanceSensorState)
     {
-        if (distanceSensorLevel == gpio::PIN_LEVEL_HIGH)
-        {
-            m_distance += wheelLength_InKilometers;
-        }
-
-        m_distanceSensorState = distanceSensorLevel;
+        return;
     }
+
+    m_distanceSensorState = distanceSensorLevel;
+
+    if (distanceSensorLevel == gpio::PIN_LEVEL_HIGH)
+    {
+        return;
+    }
+
+    m_distance += wheelLength_InKilometers;
 
     m_callback(m_distance);
 }

@@ -31,7 +31,7 @@ using TimePoint = std::chrono::system_clock::time_point;
 class Pump : public executor::Node
 {
 public:
-    Pump(uint8_t numberOfPin, PinState defaultLevel);
+    Pump();
     ~Pump() override = default;
 
 public:

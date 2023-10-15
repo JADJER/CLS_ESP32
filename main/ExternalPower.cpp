@@ -22,10 +22,18 @@
 
 #include "gpio/InputPin.hpp"
 
-ExternalPower::ExternalPower(uint8_t const numberOfPin, PinState const defaultLevel) :
-    m_externalPowerLastLevel(defaultLevel), m_externalPowerPin(std::make_unique<gpio::InputPin>(numberOfPin, defaultLevel))
+#include "esp_sleep.h"
+
+constexpr const uint8_t numberOfExternalPowerPin = 8;
+
+ExternalPower::ExternalPower() :
+    m_externalPowerLastLevel(gpio::PIN_LEVEL_UNKNOWN),
+    m_externalPowerPin(std::make_unique<gpio::InputPin>(numberOfExternalPowerPin, gpio::PIN_LEVEL_HIGH))
 {
     assert(EXTERNAL_POWER_COUNT == 2);
+    assert(numberOfExternalPowerPin >= 0 and numberOfExternalPowerPin <= 21);
+
+    ESP_ERROR_CHECK(esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(numberOfExternalPowerPin), gpio::PIN_LEVEL_LOW));
 }
 
 void ExternalPower::setCallback(ExternalPowerCallbackFunction const& callback)
