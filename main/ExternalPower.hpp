@@ -37,7 +37,7 @@ using ExternalPowerCallbackFunction = std::function<void(ExternalPowerState)>;
 class ExternalPower : public executor::Node
 {
 public:
-    ExternalPower(uint8_t numberOfPin, PinState defaultLevel);
+    ExternalPower();
     ~ExternalPower() override = default;
 
 public:

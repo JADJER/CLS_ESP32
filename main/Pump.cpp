@@ -22,8 +22,11 @@
 
 #include "gpio/OutputPin.hpp"
 
-Pump::Pump(uint8_t const numberOfPin, PinState const defaultLevel) :
-    m_enable(false), m_delay(), m_startTime(), m_pumpPin(std::make_unique<gpio::OutputPin>(numberOfPin, defaultLevel))
+constexpr const uint8_t numberOfPumpPowerPin = 16;
+
+Pump::Pump() :
+    m_enable(false), m_delay(), m_startTime(),
+    m_pumpPin(std::make_unique<gpio::OutputPin>(numberOfPumpPowerPin, gpio::PIN_LEVEL_LOW))
 {
 }
 
@@ -33,6 +36,7 @@ void Pump::enable(MicroSeconds delay)
 
     m_delay = delay;
     m_startTime = std::chrono::system_clock::now();
+
     m_enable = true;
 }
 
