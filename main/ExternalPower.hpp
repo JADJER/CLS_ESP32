@@ -18,38 +18,22 @@
 
 #pragma once
 
-#include <functional>
-
-#include "executor/Node.hpp"
 #include "gpio/PinLevel.hpp"
 #include "gpio/interface/IInputPin.hpp"
 
-enum ExternalPowerState
-{
-    EXTERNAL_POWER_ON = 0,
-    EXTERNAL_POWER_OFF = 1,
-    EXTERNAL_POWER_COUNT = 2
-};
-
 using PinState = gpio::PinLevel;
-using ExternalPowerCallbackFunction = std::function<void(ExternalPowerState)>;
 
-class ExternalPower : public executor::Node
-{
+class ExternalPower {
 public:
-    ExternalPower();
-    ~ExternalPower() override = default;
+  ExternalPower();
 
 public:
-    void setCallback(ExternalPowerCallbackFunction const& callback);
+  [[nodiscard]] bool isEnabled() const;
 
 private:
-    void process() override;
-
-private:
-    ExternalPowerCallbackFunction m_callback = nullptr;
-
-private:
-    PinState m_externalPowerLastLevel;
-    IInputPinPtr<PinState> m_externalPowerPin;
+  IInputPinPtr<PinState> m_externalPowerPin;
 };
+
+#include <memory>
+
+using ExternalPowerPtr = std::unique_ptr<ExternalPower>;

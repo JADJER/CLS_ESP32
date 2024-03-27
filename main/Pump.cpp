@@ -22,44 +22,25 @@
 
 #include "gpio/OutputPin.hpp"
 
-constexpr const uint8_t numberOfPumpPowerPin = 16;
+constexpr uint8_t const numberOfPumpPowerPin = 16;
 
 Pump::Pump() :
-    m_enable(false), m_delay(), m_startTime(),
-    m_pumpPin(std::make_unique<gpio::OutputPin>(numberOfPumpPowerPin, gpio::PIN_LEVEL_LOW))
-{
+    m_enable(false),
+    m_pumpPin(std::make_unique<gpio::OutputPin>(numberOfPumpPowerPin)) {
 }
 
-void Pump::enable(MicroSeconds delay)
-{
-    m_pumpPin->setLevel(gpio::PIN_LEVEL_HIGH);
-
-    m_delay = delay;
-    m_startTime = std::chrono::system_clock::now();
-
-    m_enable = true;
+bool Pump::isEnabled() const {
+  return m_enable;
 }
 
-void Pump::disable()
-{
-    m_pumpPin->setLevel(gpio::PIN_LEVEL_LOW);
+void Pump::enable() {
+  m_pumpPin->setValue(gpio::PIN_LEVEL_HIGH);
 
-    m_enable = false;
+  m_enable = true;
 }
 
-void Pump::process()
-{
-    if (not m_enable)
-    {
-        return;
-    }
+void Pump::disable() {
+  m_pumpPin->setValue(gpio::PIN_LEVEL_LOW);
 
-    auto const currentTime = std::chrono::system_clock::now();
-    auto const diffTime = std::chrono::duration_cast<MicroSeconds>(currentTime - m_startTime);
-    if (diffTime < m_delay)
-    {
-        return;
-    }
-
-    disable();
+  m_enable = false;
 }

@@ -18,32 +18,27 @@
 
 #pragma once
 
-#include <chrono>
-
-#include "executor/Node.hpp"
 #include "gpio/PinLevel.hpp"
 #include "gpio/interface/IOutputPin.hpp"
 
 using PinState = gpio::PinLevel;
-using MicroSeconds = std::chrono::microseconds;
-using TimePoint = std::chrono::system_clock::time_point;
 
-class Pump : public executor::Node
-{
+class Pump {
 public:
-    Pump();
-    ~Pump() override = default;
+  Pump();
 
 public:
-    void enable(MicroSeconds delay);
-    void disable();
+  [[nodiscard]] bool isEnabled() const;
+
+public:
+  void enable();
+  void disable();
 
 private:
-    void process() override;
-
-private:
-    bool m_enable;
-    MicroSeconds m_delay;
-    TimePoint m_startTime;
-    IOutputPinPtr<PinState> m_pumpPin;
+  bool m_enable;
+  IOutputPinPtr<PinState> m_pumpPin;
 };
+
+#include <memory>
+
+using PumpPtr = std::unique_ptr<Pump>;

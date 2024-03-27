@@ -1,4 +1,4 @@
-// Copyright 2023 Pavel Suprunov
+// Copyright 2024 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,34 +13,24 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 01.10.23.
+// Created by jadjer on 3/19/24.
 //
 
-#pragma once
+#include "SpeedSensor.hpp"
 
-#include <chrono>
+#include "gpio/InputPin.hpp"
 
-using MicroSeconds = std::chrono::microseconds;
-using TimePoint = std::chrono::system_clock::time_point;
+constexpr const uint32_t wheelLength = 100;
+constexpr const uint8_t numberOfDistanceSensorPin = 14;
 
-class Timer {
-public:
-  Timer();
+SpeedSensor::SpeedSensor() :
+    m_distanceSensorPin(std::make_unique<gpio::InputPin>(numberOfDistanceSensorPin, true)){
 
-public:
-  [[nodiscard]] bool isEnabled() const;
-  [[nodiscard]] bool isCompleted() const;
+}
 
-public:
-  void start(MicroSeconds delay);
-  void stop();
+uint32_t SpeedSensor::getSpeed() const {
+  auto const interval = m_distanceSensorPin->getLastIntervalInMicroSeconds();
+  auto const speed = interval * wheelLength;
 
-private:
-  bool m_enable;
-  MicroSeconds m_delay;
-  TimePoint m_startTime;
-};
-
-#include <memory>
-
-using TimerPtr = std::unique_ptr<Timer>;
+  return speed;
+}

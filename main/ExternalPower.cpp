@@ -18,51 +18,23 @@
 
 #include "ExternalPower.hpp"
 
-#include <cassert>
+#include <esp_sleep.h>
 
 #include "gpio/InputPin.hpp"
 
-#include "esp_sleep.h"
+constexpr const uint8_t numberOfExternalPowerPin = 15;
 
-constexpr const uint8_t numberOfExternalPowerPin = 8;
-
-ExternalPower::ExternalPower() :
-    m_externalPowerLastLevel(gpio::PIN_LEVEL_UNKNOWN),
-    m_externalPowerPin(std::make_unique<gpio::InputPin>(numberOfExternalPowerPin, gpio::PIN_LEVEL_HIGH))
-{
-    assert(EXTERNAL_POWER_COUNT == 2);
-    assert(numberOfExternalPowerPin >= 0 and numberOfExternalPowerPin <= 21);
-
-    ESP_ERROR_CHECK(esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(numberOfExternalPowerPin), gpio::PIN_LEVEL_LOW));
+ExternalPower::ExternalPower()
+    : m_externalPowerPin(std::make_unique<gpio::InputPin>(numberOfExternalPowerPin, true)) {
+  esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(numberOfExternalPowerPin), 1);
 }
 
-void ExternalPower::setCallback(ExternalPowerCallbackFunction const& callback)
-{
-    m_callback = callback;
-}
+bool ExternalPower::isEnabled() const {
+  auto pinLevel = m_externalPowerPin->getValue();
 
-void ExternalPower::process()
-{
-    if (not m_callback)
-    {
-        return;
-    }
+  if (pinLevel == gpio::PIN_LEVEL_HIGH) {
+    return true;
+  }
 
-    auto const externalPowerCurrentLevel = m_externalPowerPin->getLevel();
-    if (externalPowerCurrentLevel == m_externalPowerLastLevel)
-    {
-        return;
-    }
-
-    if (externalPowerCurrentLevel == gpio::PIN_LEVEL_HIGH)
-    {
-        m_callback(EXTERNAL_POWER_OFF);
-    }
-
-    if (externalPowerCurrentLevel == gpio::PIN_LEVEL_LOW)
-    {
-        m_callback(EXTERNAL_POWER_ON);
-    }
-
-    m_externalPowerLastLevel = externalPowerCurrentLevel;
+  return false;
 }

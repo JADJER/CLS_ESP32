@@ -18,49 +18,37 @@
 
 #include "Timer.hpp"
 
-Timer::Timer() : m_enable(false), m_autoRepeat(true), m_delay(), m_startTime() {}
+Timer::Timer() : m_enable(false), m_delay(), m_startTime() {}
 
-void Timer::setCallback(TimeoutCallbackFunction const& timeoutCallbackFunction)
-{
-    m_timeoutCallbackFunction = timeoutCallbackFunction;
+bool Timer::isEnabled() const {
+  return m_enable;
 }
 
-void Timer::start(MicroSeconds const delay, bool const autoRepeat)
-{
-    m_delay = delay;
-    m_startTime = std::chrono::system_clock::now();
+bool Timer::isCompleted() const {
+  if (not m_enable) {
+    return false;
+  }
 
-    m_enable = true;
-    m_autoRepeat = autoRepeat;
+  auto const currentTime = std::chrono::system_clock::now();
+  auto const diffTime = std::chrono::duration_cast<MicroSeconds>(currentTime - m_startTime);
+  if (diffTime < m_delay) {
+    return false;
+  }
+
+  return true;
 }
 
-void Timer::stop()
-{
-    m_enable = false;
+void Timer::start(MicroSeconds const delay) {
+  if (m_enable) {
+    return;
+  }
+
+  m_delay = delay;
+  m_startTime = std::chrono::system_clock::now();
+
+  m_enable = true;
 }
 
-void Timer::process()
-{
-    if (not m_enable)
-    {
-        return;
-    }
-
-    if (not m_timeoutCallbackFunction)
-    {
-        return;
-    }
-
-    auto const currentTime = std::chrono::system_clock::now();
-    auto const diffTime = std::chrono::duration_cast<MicroSeconds>(currentTime - m_startTime);
-    if (diffTime < m_delay)
-    {
-        return;
-    }
-
-    m_timeoutCallbackFunction();
-
-    if (not m_autoRepeat) {
-        stop();
-    }
+void Timer::stop() {
+  m_enable = false;
 }

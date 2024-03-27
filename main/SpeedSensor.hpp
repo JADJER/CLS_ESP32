@@ -1,4 +1,4 @@
-// Copyright 2023 Pavel Suprunov
+// Copyright 2024 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,37 +13,27 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 01.10.23.
+// Created by jadjer on 3/19/24.
 //
 
 #pragma once
 
-#include <functional>
-
-#include "executor/Node.hpp"
 #include "gpio/PinLevel.hpp"
 #include "gpio/interface/IInputPin.hpp"
 
 using PinState = gpio::PinLevel;
-using DistanceSensorCallbackFunction = std::function<void(float)>;
 
-class DistanceSensor : public executor::Node
-{
+class SpeedSensor {
 public:
-    DistanceSensor();
-    ~DistanceSensor() override = default;
+  SpeedSensor();
 
 public:
-    void setCallback(DistanceSensorCallbackFunction const& callback);
+  [[nodiscard]] uint32_t getSpeed() const;
 
 private:
-    void process() override;
-
-private:
-    DistanceSensorCallbackFunction m_callback = nullptr;
-
-private:
-    float m_distance;
-    PinState m_distanceSensorState;
-    IInputPinPtr<PinState> m_distanceSensorPin;
+  IInputPinPtr<PinState> m_distanceSensorPin;
 };
+
+#include <memory>
+
+using SpeedSensorPtr = std::unique_ptr<SpeedSensor>;
