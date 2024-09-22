@@ -1,4 +1,4 @@
-// Copyright 2024 Pavel Suprunov
+// Copyright 2023 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,27 +13,33 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 3/19/24.
+// Created by jadjer on 01.10.23.
 //
 
 #pragma once
 
+#include <cstdint>
+
 #include "gpio/PinLevel.hpp"
-#include "gpio/interface/IInputPin.hpp"
+#include "gpio/interface/InputPin.hpp"
 
-using PinState = gpio::PinLevel;
+using PinLevel = gpio::PinLevel;
+using ExternalPowerPin = InputPinPtr<PinLevel>;
 
-class SpeedSensor {
+class ExternalPower {
 public:
-  SpeedSensor();
+  explicit ExternalPower(uint8_t numberOfPin);
 
 public:
-  [[nodiscard]] uint32_t getSpeed() const;
+  [[nodiscard]] bool isEnabled() const;
 
 private:
-  IInputPinPtr<PinState> m_distanceSensorPin;
+  uint8_t m_numberOfPin;
+
+private:
+  ExternalPowerPin m_externalPowerPin;
 };
 
 #include <memory>
 
-using SpeedSensorPtr = std::unique_ptr<SpeedSensor>;
+using ExternalPowerPtr = std::unique_ptr<ExternalPower>;

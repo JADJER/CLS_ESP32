@@ -1,4 +1,4 @@
-// Copyright 2024 Pavel Suprunov
+// Copyright 2023 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,24 +13,21 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 3/19/24.
+// Created by jadjer on 01.10.23.
 //
 
-#include "SpeedSensor.hpp"
+#include "ExternalPower.hpp"
+
+#include <esp_sleep.h>
 
 #include "gpio/InputPin.hpp"
 
-constexpr const uint32_t wheelLength = 100;
-constexpr const uint8_t numberOfDistanceSensorPin = 14;
+ExternalPower::ExternalPower(uint8_t const numberOfPin) : m_numberOfPin(numberOfPin),
+                                                          m_externalPowerPin(std::make_unique<gpio::InputPin>(numberOfPin)) {
 
-SpeedSensor::SpeedSensor() :
-    m_distanceSensorPin(std::make_unique<gpio::InputPin>(numberOfDistanceSensorPin, true)){
-
+  ESP_ERROR_CHECK(esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(m_numberOfPin), PinLevel::PIN_LEVEL_HIGH));
 }
 
-uint32_t SpeedSensor::getSpeed() const {
-  auto const interval = m_distanceSensorPin->getLastIntervalInMicroSeconds();
-  auto const speed = interval * wheelLength;
-
-  return speed;
+bool ExternalPower::isEnabled() const {
+  return m_externalPowerPin->getLevel();
 }

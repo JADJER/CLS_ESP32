@@ -16,31 +16,32 @@
 // Created by jadjer on 01.10.23.
 //
 
-#pragma once
+#include "Pump.hpp"
 
-#include <chrono>
+#include <esp_log.h>
 
-using MicroSeconds = std::chrono::microseconds;
-using TimePoint = std::chrono::system_clock::time_point;
+#include "gpio/OutputPin.hpp"
 
-class Timer {
-public:
-  Timer();
+Pump::Pump(uint8_t const numberOfPin) : m_enable(false),
+                                        m_pumpPin(std::make_unique<gpio::OutputPin>(numberOfPin)) {
+}
 
-public:
-  [[nodiscard]] bool isEnabled() const;
-  [[nodiscard]] bool isCompleted() const;
+bool Pump::isEnabled() const {
+  return m_enable;
+}
 
-public:
-  void start(MicroSeconds delay);
-  void stop();
+void Pump::enable() {
+  m_pumpPin->setLevel(gpio::PIN_LEVEL_HIGH);
 
-private:
-  bool m_enable;
-  MicroSeconds m_delay;
-  TimePoint m_startTime;
-};
+  m_enable = true;
 
-#include <memory>
+  ESP_LOGI("Pump", "Enabled");
+}
 
-using TimerPtr = std::unique_ptr<Timer>;
+void Pump::disable() {
+  m_pumpPin->setLevel(gpio::PIN_LEVEL_LOW);
+
+  m_enable = false;
+
+  ESP_LOGI("Pump", "Disabled");
+}

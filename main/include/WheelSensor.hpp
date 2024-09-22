@@ -1,4 +1,4 @@
-// Copyright 2023 Pavel Suprunov
+// Copyright 2024 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,27 +13,32 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 01.10.23.
+// Created by jadjer on 3/19/24.
 //
 
 #pragma once
 
+#include <cstdint>
+
 #include "gpio/PinLevel.hpp"
-#include "gpio/interface/IInputPin.hpp"
+#include "gpio/interface/InputPin.hpp"
 
-using PinState = gpio::PinLevel;
+class WheelSensor {
+  using PinLevel = gpio::PinLevel;
+  using WheelSensorPin = InputPinPtr<PinLevel>;
+  using WheelLength = uint64_t;
 
-class ExternalPower {
 public:
-  ExternalPower();
+  WheelSensor(uint64_t wheelLength, uint8_t numberOfPin);
 
 public:
-  [[nodiscard]] bool isEnabled() const;
+  [[nodiscard]] uint64_t getDistance() const;
 
 private:
-  IInputPinPtr<PinState> m_externalPowerPin;
+  WheelLength m_wheelLength;
+  WheelSensorPin m_wheelSensorPin;
 };
 
 #include <memory>
 
-using ExternalPowerPtr = std::unique_ptr<ExternalPower>;
+using WheelSensorPtr = std::unique_ptr<WheelSensor>;

@@ -1,11 +1,18 @@
 cmake_minimum_required(VERSION 3.17)
 
-set(SOURCES
-        main.cpp
-        Controller.cpp
-        Pump.cpp
-        Timer.cpp
-        SpeedSensor.cpp
-        ExternalPower.cpp)
+set(INCLUDE_DIRS
+        include
+)
 
-idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS .)
+set(SOURCES
+        app_main.cpp
+
+        src/Pump.cpp
+        src/Timer.cpp
+        src/Controller.cpp
+        src/WheelSensor.cpp
+        src/Configuration.cpp
+        src/ExternalPower.cpp
+)
+
+idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS ${INCLUDE_DIRS})

@@ -16,25 +16,32 @@
 // Created by jadjer on 01.10.23.
 //
 
-#include "ExternalPower.hpp"
+#pragma once
 
-#include <esp_sleep.h>
+#include <cstdint>
 
-#include "gpio/InputPin.hpp"
+#include "gpio/PinLevel.hpp"
+#include "gpio/interface/OutputPin.hpp"
 
-constexpr const uint8_t numberOfExternalPowerPin = 15;
+using PinLevel = gpio::PinLevel;
+using PumpPin = OutputPinPtr<PinLevel>;
 
-ExternalPower::ExternalPower()
-    : m_externalPowerPin(std::make_unique<gpio::InputPin>(numberOfExternalPowerPin, true)) {
-  esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(numberOfExternalPowerPin), 1);
-}
+class Pump {
+public:
+  explicit Pump(uint8_t numberOfPin);
 
-bool ExternalPower::isEnabled() const {
-  auto pinLevel = m_externalPowerPin->getValue();
+public:
+  [[nodiscard]] bool isEnabled() const;
 
-  if (pinLevel == gpio::PIN_LEVEL_HIGH) {
-    return true;
-  }
+public:
+  void enable();
+  void disable();
 
-  return false;
-}
+private:
+  bool m_enable;
+  PumpPin m_pumpPin;
+};
+
+#include <memory>
+
+using PumpPtr = std::unique_ptr<Pump>;

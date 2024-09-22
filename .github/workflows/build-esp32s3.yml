@@ -19,7 +19,7 @@ jobs:
       - name: esp-idf build
         uses: espressif/esp-idf-ci-action@v1
         with:
-          esp_idf_version: v5.1.1
+          esp_idf_version: v5.3
           target: esp32s3
           path: '.'
 
@@ -27,7 +27,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/chain_lubrication_system.bin
+          file: build/CLS.bin
           asset_name: chain-lubrication-system-esp32s3-$tag.bin
           tag: ${{ github.ref }}
           overwrite: true

@@ -1,4 +1,4 @@
-// Copyright 2023 Pavel Suprunov
+// Copyright 2024 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,17 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//
-// Created by jadjer on 01.10.23.
-//
+#pragma once
 
-#include "Controller.hpp"
-#include "executor/Executor.hpp"
+#include <functional>
 
-extern "C" void app_main() {
-  NodePtr controllerPtr = std::make_shared<Controller>();
+#include <esp_timer.h>
 
-  ExecutorPtr executorPtr = std::make_unique<executor::Executor>();
-  executorPtr->addNode(controllerPtr, 1);
-  executorPtr->spin();
-}
+using Callback = std::function<void()>;
+
+class Timer {
+public:
+  Timer();
+
+public:
+  [[nodiscard]] bool isEnabled() const;
+
+public:
+  void start(uint64_t delay, Callback callback);
+  void stop();
+
+private:
+  Callback m_callback;
+  esp_timer_handle_t m_timerHandle;
+
+private:
+  static void callback(void *arg);
+};
+
+#include <memory>
+
+using TimerPtr = std::unique_ptr<Timer>;
