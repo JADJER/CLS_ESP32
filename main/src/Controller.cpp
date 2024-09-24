@@ -78,7 +78,7 @@ void Controller::sleep() {
 void Controller::pumpEnable() {
   m_pumpPtr->enable();
 
-  auto const pumpTimeout_InSeconds = m_configuration->getPumpTimout();
+  auto const pumpTimeout_InSeconds = m_configuration->getPumpTimeout();
   auto const pumpTimeout_InMicroseconds = pumpTimeout_InSeconds * PER_MICROSECOND;
   m_timerPtr->start(pumpTimeout_InMicroseconds, [this] {
     m_pumpEnable = false;

@@ -31,7 +31,7 @@ public:
   [[nodiscard]] virtual uint8_t getPumpPin() const = 0;
   [[nodiscard]] virtual uint8_t getWheelSensorPin() const = 0;
 
-  [[nodiscard]] virtual uint64_t getPumpTimout() const = 0;
+  [[nodiscard]] virtual uint64_t getPumpTimeout() const = 0;
   [[nodiscard]] virtual uint64_t getWheelLength() const = 0;
 
   [[nodiscard]] virtual float getMinimalSpeed() const = 0;
