@@ -13,47 +13,24 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 3/18/24.
+// Created by jadjer on 9/24/24.
 //
 
 #pragma once
 
-#include <thread>
-
 #include <esp_task_wdt.h>
 
-#include "ExternalPower.hpp"
-#include "Pump.hpp"
-#include "Timer.hpp"
-#include "WheelSensor.hpp"
-
-#include "configuration/IConfiguration.hpp"
-
-class Controller {
+class ControllerBase {
 public:
-  explicit Controller(IConfigurationPtr configuration);
+  ControllerBase();
+  virtual ~ControllerBase() = default;
 
 public:
   [[noreturn]] void spin();
 
-private:
-  void spinOnce();
+protected:
+  virtual void spinOnce() = 0;
 
 private:
-  void pumpEnable();
-  void pumpDisable();
-  void sleep();
-
-private:
-  IConfigurationPtr m_configuration;
-
-private:
-  PumpPtr m_pumpPtr;
-  TimerPtr m_timerPtr;
-  WheelSensorPtr m_wheelSensorPtr;
-  ExternalPowerPtr m_externalPowerPtr;
-
-private:
-  std::thread m_thread;
   esp_task_wdt_user_handle_t m_watchdogHandle;
 };

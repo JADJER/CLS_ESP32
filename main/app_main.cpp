@@ -2,7 +2,7 @@
 // Created by jadjer on 8/9/24.
 //
 
-#include "Controller.hpp"
+#include "controller/Controller.hpp"
 #include "configuration/Configuration.hpp"
 
 extern "C" void app_main() {

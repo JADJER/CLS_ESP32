@@ -20,27 +20,32 @@
 
 #include <cstdint>
 
-class IConfiguration {
+namespace interface {
+
+class Configuration {
 public:
-  virtual ~IConfiguration() = default;
+  virtual ~Configuration() = default;
 
 public:
   [[nodiscard]] virtual uint8_t getExternalPowerPin() const = 0;
   [[nodiscard]] virtual uint8_t getPumpPin() const = 0;
   [[nodiscard]] virtual uint8_t getWheelSensorPin() const = 0;
 
-public:
-  [[nodiscard]] virtual uint64_t getTimeForEnable() const = 0;
-  [[nodiscard]] virtual uint64_t getDistanceForEnable() const = 0;
-
-public:
-  [[nodiscard]] virtual uint64_t getDelayAfterBoot() const = 0;
   [[nodiscard]] virtual uint64_t getPumpTimout() const = 0;
+  [[nodiscard]] virtual uint64_t getWheelLength() const = 0;
+
+  [[nodiscard]] virtual float getMinimalSpeed() const = 0;
+  [[nodiscard]] virtual float getDistanceForEnable() const = 0;
+  [[nodiscard]] virtual float getTotalDistance() const = 0;
+  [[nodiscard]] virtual float getNextDistance() const = 0;
 
 public:
-  [[nodiscard]] virtual uint64_t getWheelLength() const = 0;
+  virtual void saveTotalDistance(float distance) = 0;
+  virtual void saveNextDistance(float distance) = 0;
 };
+
+}// namespace interface
 
 #include <memory>
 
-using IConfigurationPtr = std::shared_ptr<IConfiguration>;
+using ConfigurationPtr = std::shared_ptr<interface::Configuration>;

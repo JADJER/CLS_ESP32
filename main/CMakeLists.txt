@@ -13,6 +13,7 @@ set(SOURCES
         src/WheelSensor.cpp
         src/Configuration.cpp
         src/ExternalPower.cpp
+        src/ControllerBase.cpp
 )
 
 idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS ${INCLUDE_DIRS})

@@ -13,32 +13,24 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 3/19/24.
+// Created by jadjer on 9/24/24.
 //
 
-#pragma once
+#include "controller/ControllerBase.hpp"
 
-#include <cstdint>
+constexpr uint64_t const TASK_RESET_PERIOD_MICROSECOND = 3000;
 
-#include "gpio/PinLevel.hpp"
-#include "gpio/interface/InputPin.hpp"
+ControllerBase::ControllerBase() : m_watchdogHandle(nullptr) {
+}
 
-class WheelSensor {
-  using PinLevel = gpio::PinLevel;
-  using WheelSensorPin = InputPinPtr<PinLevel>;
+[[noreturn]] void ControllerBase::spin() {
+  ESP_ERROR_CHECK(esp_task_wdt_add_user("controller_spin", &m_watchdogHandle));
 
-public:
-  WheelSensor(uint8_t numberOfPin, float wheelLength);
+  while (true) {
+    ESP_ERROR_CHECK(esp_task_wdt_reset_user(m_watchdogHandle));
+    spinOnce();
+    vTaskDelay(pdMS_TO_TICKS(TASK_RESET_PERIOD_MICROSECOND));
+  }
 
-public:
-  [[nodiscard]] float getDistance() const;
-  [[nodiscard]] float getSpeed() const;
-
-private:
-  float m_wheelLength;
-  WheelSensorPin m_wheelSensorPin;
-};
-
-#include <memory>
-
-using WheelSensorPtr = std::unique_ptr<WheelSensor>;
+  ESP_ERROR_CHECK(esp_task_wdt_delete_user(m_watchdogHandle));
+}

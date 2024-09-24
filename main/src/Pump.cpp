@@ -18,30 +18,15 @@
 
 #include "Pump.hpp"
 
-#include <esp_log.h>
-
 #include "gpio/OutputPin.hpp"
 
-Pump::Pump(uint8_t const numberOfPin) : m_enable(false),
-                                        m_pumpPin(std::make_unique<gpio::OutputPin>(numberOfPin)) {
-}
-
-bool Pump::isEnabled() const {
-  return m_enable;
+Pump::Pump(uint8_t const numberOfPin) : m_pumpPin(std::make_unique<gpio::OutputPin>(numberOfPin)) {
 }
 
 void Pump::enable() {
   m_pumpPin->setLevel(gpio::PIN_LEVEL_HIGH);
-
-  m_enable = true;
-
-  ESP_LOGI("Pump", "Enabled");
 }
 
 void Pump::disable() {
   m_pumpPin->setLevel(gpio::PIN_LEVEL_LOW);
-
-  m_enable = false;
-
-  ESP_LOGI("Pump", "Disabled");
 }

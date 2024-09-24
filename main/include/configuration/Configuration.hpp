@@ -18,9 +18,9 @@
 
 #pragma once
 
-#include "configuration/IConfiguration.hpp"
+#include "configuration/interface/Configuration.hpp"
 
-class Configuration : public IConfiguration {
+class Configuration : public interface::Configuration {
 public:
   ~Configuration() override = default;
 
@@ -29,14 +29,15 @@ public:
   [[nodiscard]] uint8_t getPumpPin() const override;
   [[nodiscard]] uint8_t getWheelSensorPin() const override;
 
-public:
-  [[nodiscard]] uint64_t getTimeForEnable() const override;
-  [[nodiscard]] uint64_t getDistanceForEnable() const override;
-
-public:
-  uint64_t getDelayAfterBoot() const override;
   [[nodiscard]] uint64_t getPumpTimout() const override;
+  [[nodiscard]] uint64_t getWheelLength() const override;
+
+  [[nodiscard]] float getMinimalSpeed() const override;
+  [[nodiscard]] float getDistanceForEnable() const override;
+  [[nodiscard]] float getTotalDistance() const override;
+  [[nodiscard]] float getNextDistance() const override;
 
 public:
-  [[nodiscard]] uint64_t getWheelLength() const override;
+  void saveTotalDistance(float distance) override;
+  void saveNextDistance(float distance) override;
 };
