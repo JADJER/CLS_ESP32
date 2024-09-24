@@ -18,32 +18,26 @@
 
 #pragma once
 
-#include <functional>
+#include <cstdint>
 
-#include "executor/Node.hpp"
 #include "gpio/PinLevel.hpp"
-#include "gpio/interface/IInputPin.hpp"
+#include "gpio/interface/OutputPin.hpp"
 
-using PinState = gpio::PinLevel;
-using DistanceSensorCallbackFunction = std::function<void(float)>;
+using PinLevel = gpio::PinLevel;
+using PumpPin = OutputPinPtr<PinLevel>;
 
-class DistanceSensor : public executor::Node
-{
+class Pump {
 public:
-    DistanceSensor();
-    ~DistanceSensor() override = default;
+  explicit Pump(uint8_t numberOfPin);
 
 public:
-    void setCallback(DistanceSensorCallbackFunction const& callback);
+  void enable();
+  void disable();
 
 private:
-    void process() override;
-
-private:
-    DistanceSensorCallbackFunction m_callback = nullptr;
-
-private:
-    float m_distance;
-    PinState m_distanceSensorState;
-    IInputPinPtr<PinState> m_distanceSensorPin;
+  PumpPin m_pumpPin;
 };
+
+#include <memory>
+
+using PumpPtr = std::unique_ptr<Pump>;

@@ -1,4 +1,4 @@
-// Copyright 2023 Pavel Suprunov
+// Copyright 2024 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,37 +13,24 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 01.10.23.
+// Created by jadjer on 9/24/24.
 //
 
 #pragma once
 
-#include <chrono>
+#include <esp_task_wdt.h>
 
-#include "executor/Node.hpp"
-#include "gpio/PinLevel.hpp"
-#include "gpio/interface/IOutputPin.hpp"
-
-using PinState = gpio::PinLevel;
-using MicroSeconds = std::chrono::microseconds;
-using TimePoint = std::chrono::system_clock::time_point;
-
-class Pump : public executor::Node
-{
+class ControllerBase {
 public:
-    Pump();
-    ~Pump() override = default;
+  ControllerBase();
+  virtual ~ControllerBase() = default;
 
 public:
-    void enable(MicroSeconds delay);
-    void disable();
+  [[noreturn]] void spin();
+
+protected:
+  virtual void spinOnce() = 0;
 
 private:
-    void process() override;
-
-private:
-    bool m_enable;
-    MicroSeconds m_delay;
-    TimePoint m_startTime;
-    IOutputPinPtr<PinState> m_pumpPin;
+  esp_task_wdt_user_handle_t m_watchdogHandle;
 };
