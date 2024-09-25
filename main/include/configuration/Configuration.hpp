@@ -28,12 +28,11 @@ public:
   ~Configuration() override;
 
 public:
+  [[nodiscard]] bool isLubricate() const override;
   [[nodiscard]] uint8_t getExternalPowerPin() const override;
   [[nodiscard]] uint8_t getPumpPin() const override;
   [[nodiscard]] uint8_t getWheelSensorPin() const override;
-
   [[nodiscard]] uint64_t getPumpTimeout() const override;
-
   [[nodiscard]] float getWheelLength() const override;
   [[nodiscard]] float getMinimalSpeed() const override;
   [[nodiscard]] float getDistanceForEnable() const override;
@@ -41,8 +40,8 @@ public:
   [[nodiscard]] float getNextDistance() const override;
 
 public:
+  void setLubricate(bool lubricate) override;
   void setPumpTimeout(uint64_t timeout) override;
-
   void setWheelLength(float wheelLength) override;
   void setMinimalSpeed(float minimalSpeed) override;
   void setDistanceForEnable(float distance) override;

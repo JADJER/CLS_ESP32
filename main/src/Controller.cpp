@@ -24,13 +24,10 @@
 constexpr uint64_t const PER_MICROSECOND = 1000000;
 
 Controller::Controller(ConfigurationPtr configuration) : m_configuration(std::move(configuration)),
-
                                                          m_pumpPtr(std::make_unique<Pump>(m_configuration->getPumpPin())),
                                                          m_timerPtr(std::make_unique<Timer>()),
                                                          m_wheelSensorPtr(std::make_unique<WheelSensor>(m_configuration->getWheelSensorPin(), m_configuration->getWheelLength())),
-                                                         m_externalPowerPtr(std::make_unique<ExternalPower>(m_configuration->getExternalPowerPin())),
-
-                                                         m_lubricate(false) {
+                                                         m_externalPowerPtr(std::make_unique<ExternalPower>(m_configuration->getExternalPowerPin())) {
 
   float const nextDistance = m_configuration->getNextDistance();
   float const totalDistance = m_configuration->getTotalDistance();
@@ -43,23 +40,27 @@ Controller::Controller(ConfigurationPtr configuration) : m_configuration(std::mo
 }
 
 void Controller::spinOnce() {
-//  if (not m_externalPowerPtr->isEnabled()) {
-//    sleep();
-//  }
+  if (not m_externalPowerPtr->isEnabled()) {
+    sleep();
+  }
 
+  bool const lubricate = m_configuration->isLubricate();
   float const speed = m_wheelSensorPtr->getSpeed();
   float const actualDistance = m_wheelSensorPtr->getDistance();
   float const savedDistance = m_configuration->getTotalDistance();
   float const totalDistance = savedDistance + actualDistance;
   float const nextDistance = m_configuration->getNextDistance();
 
-  auto const isLubricate = m_lubricate ? "True" : "False";
-  auto const isPump = m_pumpPtr->isEnabled() ? "True" : "False";
-
-  ESP_LOGI("Controller", "Total distance: %f[m], next distance: %f[m], speed: %f[m/s], lubricate: %s, pump: %s", totalDistance, nextDistance, speed, isLubricate, isPump);
+  ESP_LOGI("Controller",
+           "Total distance: %f[m], next distance: %f[m], speed: %f[m/s], lubricate: %s, pump: %s",
+           totalDistance,
+           nextDistance,
+           speed,
+           lubricate ? "True" : "False",
+           m_pumpPtr->isEnabled() ? "True" : "False");
 
   if (totalDistance >= nextDistance) {
-    m_lubricate = true;
+    m_configuration->setLubricate(true);
   }
 
   float const minimalSpeed = m_configuration->getMinimalSpeed();
@@ -69,7 +70,7 @@ void Controller::spinOnce() {
     return;
   }
 
-  if (m_lubricate) {
+  if (lubricate) {
     pumpEnable();
   }
 }
@@ -77,9 +78,9 @@ void Controller::spinOnce() {
 void Controller::sleep() {
   ESP_LOGI("Controller", "External power is disabled. Sleeping");
 
-  auto const actualDistance = m_wheelSensorPtr->getDistance();
-  auto const savedDistance = m_configuration->getTotalDistance();
-  auto const totalDistance = savedDistance + actualDistance;
+  float const actualDistance = m_wheelSensorPtr->getDistance();
+  float const savedDistance = m_configuration->getTotalDistance();
+  float const totalDistance = savedDistance + actualDistance;
 
   m_configuration->saveTotalDistance(totalDistance);
 
@@ -96,17 +97,17 @@ void Controller::pumpEnable() {
 
   ESP_LOGI("Controller", "Pump enabled");
 
-  auto const pumpTimeout_InSeconds = m_configuration->getPumpTimeout();
-  auto const pumpTimeout_InMicroseconds = pumpTimeout_InSeconds * PER_MICROSECOND;
+  uint64_t const pumpTimeout_InSeconds = m_configuration->getPumpTimeout();
+  uint64_t const pumpTimeout_InMicroseconds = pumpTimeout_InSeconds * PER_MICROSECOND;
 
   m_timerPtr->start(pumpTimeout_InMicroseconds, [this] {
-    m_lubricate = false;
+    m_configuration->setLubricate(false);
 
-    auto const actualDistance = m_wheelSensorPtr->getDistance();
-    auto const savedDistance = m_configuration->getTotalDistance();
-    auto const totalDistance = savedDistance + actualDistance;
-    auto const distanceForEnable = m_configuration->getDistanceForEnable();
-    auto const nextDistance = totalDistance + distanceForEnable;
+    float const actualDistance = m_wheelSensorPtr->getDistance();
+    float const savedDistance = m_configuration->getTotalDistance();
+    float const totalDistance = savedDistance + actualDistance;
+    float const distanceForEnable = m_configuration->getDistanceForEnable();
+    float const nextDistance = totalDistance + distanceForEnable;
 
     m_configuration->saveNextDistance(nextDistance);
 

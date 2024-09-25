@@ -28,6 +28,7 @@ WheelSensor::WheelSensor(uint8_t const numberOfPin, float const wheelLength) : m
 
 float WheelSensor::getDistance() const {
   uint64_t const wheelCount = m_wheelSensorPin->getCount();
+
   float const distance = m_wheelLength * static_cast<float>(wheelCount);
 
   return distance;
@@ -36,6 +37,7 @@ float WheelSensor::getDistance() const {
 float WheelSensor::getSpeed() const {
   uint64_t const delay_InMicroseconds = m_wheelSensorPin->getDelay();
   float const delay_InSeconds = static_cast<float>(delay_InMicroseconds) / PER_MICROSECOND;
+
   float const speed = m_wheelLength / delay_InSeconds;
 
   return speed;

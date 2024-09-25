@@ -52,7 +52,7 @@ void Timer::stop() {
 }
 
 void Timer::callback(void *arg) {
-  auto const timer = static_cast<Timer *>(arg);
+  auto const *timer = static_cast<Timer *>(arg);
 
   timer->m_callback();
 }
