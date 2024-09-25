@@ -23,10 +23,10 @@
 #include "gpio/PinLevel.hpp"
 #include "gpio/interface/InputPin.hpp"
 
-using PinLevel = gpio::PinLevel;
-using ExternalPowerPin = InputPinPtr<PinLevel>;
-
 class ExternalPower {
+  using PinLevel = gpio::PinLevel;
+  using ExternalPowerPin = InputPinPtr<PinLevel>;
+
 public:
   explicit ExternalPower(uint8_t numberOfPin);
 
@@ -35,8 +35,6 @@ public:
 
 private:
   uint8_t m_numberOfPin;
-
-private:
   ExternalPowerPin m_externalPowerPin;
 };
 

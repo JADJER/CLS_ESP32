@@ -23,10 +23,10 @@
 #include "gpio/PinLevel.hpp"
 #include "gpio/interface/OutputPin.hpp"
 
-using PinLevel = gpio::PinLevel;
-using PumpPin = OutputPinPtr<PinLevel>;
-
 class Pump {
+  using PinLevel = gpio::PinLevel;
+  using PumpPin = OutputPinPtr<PinLevel>;
+
 public:
   explicit Pump(uint8_t numberOfPin);
 
