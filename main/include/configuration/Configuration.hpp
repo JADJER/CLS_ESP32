@@ -29,7 +29,7 @@ public:
   [[nodiscard]] uint8_t getPumpPin() const override;
   [[nodiscard]] uint8_t getWheelSensorPin() const override;
 
-  [[nodiscard]] uint64_t getPumpTimout() const override;
+  [[nodiscard]] uint64_t getPumpTimeout() const override;
   [[nodiscard]] uint64_t getWheelLength() const override;
 
   [[nodiscard]] float getMinimalSpeed() const override;

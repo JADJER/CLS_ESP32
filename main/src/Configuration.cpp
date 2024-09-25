@@ -34,7 +34,7 @@ uint8_t Configuration::getWheelSensorPin() const {
   return 14;
 }
 
-uint64_t Configuration::getPumpTimout() const {
+uint64_t Configuration::getPumpTimeout() const {
   return 60;
 }
 
