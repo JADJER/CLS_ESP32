@@ -27,19 +27,23 @@ public:
   virtual ~Configuration() = default;
 
 public:
+  [[nodiscard]] virtual bool isLubricate() const = 0;
   [[nodiscard]] virtual uint8_t getExternalPowerPin() const = 0;
   [[nodiscard]] virtual uint8_t getPumpPin() const = 0;
   [[nodiscard]] virtual uint8_t getWheelSensorPin() const = 0;
-
   [[nodiscard]] virtual uint64_t getPumpTimeout() const = 0;
-  [[nodiscard]] virtual uint64_t getWheelLength() const = 0;
-
+  [[nodiscard]] virtual float getWheelLength() const = 0;
   [[nodiscard]] virtual float getMinimalSpeed() const = 0;
   [[nodiscard]] virtual float getDistanceForEnable() const = 0;
   [[nodiscard]] virtual float getTotalDistance() const = 0;
   [[nodiscard]] virtual float getNextDistance() const = 0;
 
 public:
+  virtual void setLubricate(bool lubricate) = 0;
+  virtual void setPumpTimeout(uint64_t timeout) = 0;
+  virtual void setWheelLength(float wheelLength) = 0;
+  virtual void setMinimalSpeed(float minimalSpeed) = 0;
+  virtual void setDistanceForEnable(float distance) = 0;
   virtual void saveTotalDistance(float distance) = 0;
   virtual void saveNextDistance(float distance) = 0;
 };

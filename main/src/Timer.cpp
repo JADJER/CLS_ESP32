@@ -23,7 +23,8 @@ Timer::Timer() : m_timerHandle(nullptr) {
       .arg = this,
       .dispatch_method = ESP_TIMER_TASK,
       .name = "timer",
-      .skip_unhandled_events = true};
+      .skip_unhandled_events = true,
+  };
 
   ESP_ERROR_CHECK(esp_timer_create(&timerConfig, &m_timerHandle));
 }
@@ -43,11 +44,15 @@ void Timer::start(uint64_t const delay, Callback callback) {
 }
 
 void Timer::stop() {
+  if (not isEnabled()) {
+    return;
+  }
+
   ESP_ERROR_CHECK(esp_timer_stop(m_timerHandle));
 }
 
 void Timer::callback(void *arg) {
-  auto const timer = static_cast<Timer *>(arg);
+  auto const *timer = static_cast<Timer *>(arg);
 
   timer->m_callback();
 }

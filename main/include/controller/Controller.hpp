@@ -47,7 +47,4 @@ private:
   TimerPtr m_timerPtr;
   WheelSensorPtr m_wheelSensorPtr;
   ExternalPowerPtr m_externalPowerPtr;
-
-private:
-  bool m_pumpEnable;
 };

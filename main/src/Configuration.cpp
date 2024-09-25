@@ -18,48 +18,148 @@
 
 #include "configuration/Configuration.hpp"
 
-constexpr uint64_t const HOUR = 60;
-constexpr uint64_t const MINUTE = 60;
-constexpr uint64_t const KILOMETER = 1000;
+#include <cmath>
+#include <cstring>
+#include <nvs.h>
+#include <nvs_flash.h>
+
+#include "sdkconfig.h"
+
+esp_err_t nvs_set_float(nvs_handle_t handle, const char *key, float value) {
+  uint64_t buf = 0;
+
+  memcpy(&buf, &value, sizeof(float));
+
+  return nvs_set_u64(handle, key, buf);
+}
+
+esp_err_t nvs_get_float(nvs_handle_t handle, const char *key, float *value) {
+  uint64_t buf = 0;
+
+  esp_err_t err = nvs_get_u64(handle, key, &buf);
+  if (err == ESP_OK) {
+    memcpy(value, &buf, sizeof(float));
+  }
+
+  return err;
+}
+
+Configuration::Configuration() : m_storageHandle(0) {
+  esp_err_t err = nvs_flash_init();
+  if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    ESP_ERROR_CHECK(nvs_flash_erase());
+    err = nvs_flash_init();
+  }
+  ESP_ERROR_CHECK(err);
+
+  ESP_ERROR_CHECK(nvs_open("storage", NVS_READWRITE, &m_storageHandle));
+}
+
+Configuration::~Configuration() {
+  ESP_ERROR_CHECK(nvs_commit(m_storageHandle));
+  nvs_close(m_storageHandle);
+}
+
+bool Configuration::isLubricate() const {
+  uint8_t lubricate = 0;
+
+  nvs_get_u8(m_storageHandle, "lubricate", &lubricate);
+
+  return lubricate;
+}
 
 uint8_t Configuration::getExternalPowerPin() const {
-  return 15;
+  uint8_t const externalPowerPin = CONFIG_EXTERNAL_POWER_PIN;
+
+  return externalPowerPin;
 }
 
 uint8_t Configuration::getPumpPin() const {
-  return 16;
+  uint8_t const pumpPin = CONFIG_PUMP_PIN;
+
+  return pumpPin;
 }
 
 uint8_t Configuration::getWheelSensorPin() const {
-  return 14;
+  uint8_t const wheelSensorPin = CONFIG_WHEEL_SENSOR_PIN;
+
+  return wheelSensorPin;
 }
 
 uint64_t Configuration::getPumpTimeout() const {
-  return 60;
+  uint64_t pumpTimeout = CONFIG_PUMP_TIMEOUT;
+
+  nvs_get_u64(m_storageHandle, "pump_timeout", &pumpTimeout);
+
+  return pumpTimeout;
 }
 
-uint64_t Configuration::getWheelLength() const {
-  return 1300;
+float Configuration::getWheelLength() const {
+  uint64_t const wheelDiameter_InInches = CONFIG_WHEEL_DIAMETER;
+  float const wheelDiameter_InMeter = static_cast<float>(wheelDiameter_InInches) * 0.0254;
+  float wheelLength = wheelDiameter_InMeter * static_cast<float>(M_PI);
+
+  nvs_get_float(m_storageHandle, "wheel_length", &wheelLength);
+
+  return wheelLength;
 }
 
 float Configuration::getMinimalSpeed() const {
-  return 5;
+  float minimalSpeed = CONFIG_WHEEL_MINIMAL_SPEED;
+
+  nvs_get_float(m_storageHandle, "minimal_speed", &minimalSpeed);
+
+  return minimalSpeed;
 }
 
 float Configuration::getDistanceForEnable() const {
-  return 500 * KILOMETER;
+  float distanceForEnable = CONFIG_DISTANCE_OF_ENABLE;
+
+  nvs_get_float(m_storageHandle, "distance_for_enable", &distanceForEnable);
+
+  return distanceForEnable;
 }
 
 float Configuration::getTotalDistance() const {
-  return 0;
+  float totalDistance = 0;
+
+  nvs_get_float(m_storageHandle, "total_distance", &totalDistance);
+
+  return totalDistance;
 }
 
 float Configuration::getNextDistance() const {
-  return 0;
+  float nextDistance = 0;
+
+  nvs_get_float(m_storageHandle, "next_distance", &nextDistance);
+
+  return nextDistance;
+}
+
+void Configuration::setLubricate(bool lubricate) {
+  ESP_ERROR_CHECK(nvs_set_i8(m_storageHandle, "lubricate", lubricate));
+}
+
+void Configuration::setPumpTimeout(uint64_t timeout) {
+  ESP_ERROR_CHECK(nvs_set_float(m_storageHandle, "pump_timeout", timeout));
+}
+
+void Configuration::setWheelLength(float wheelLength) {
+  ESP_ERROR_CHECK(nvs_set_float(m_storageHandle, "wheel_length", wheelLength));
+}
+
+void Configuration::setMinimalSpeed(float minimalSpeed) {
+  ESP_ERROR_CHECK(nvs_set_float(m_storageHandle, "minimal_speed", minimalSpeed));
+}
+
+void Configuration::setDistanceForEnable(float distance) {
+  ESP_ERROR_CHECK(nvs_set_float(m_storageHandle, "distance_for_enable", distance));
 }
 
 void Configuration::saveTotalDistance(float distance) {
+  ESP_ERROR_CHECK(nvs_set_float(m_storageHandle, "total_distance", distance));
 }
 
 void Configuration::saveNextDistance(float distance) {
+  ESP_ERROR_CHECK(nvs_set_float(m_storageHandle, "next_distance", distance));
 }

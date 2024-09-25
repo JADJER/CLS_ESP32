@@ -18,26 +18,36 @@
 
 #pragma once
 
+#include <nvs_handle.hpp>
+
 #include "configuration/interface/Configuration.hpp"
 
 class Configuration : public interface::Configuration {
 public:
-  ~Configuration() override = default;
+  Configuration();
+  ~Configuration() override;
 
 public:
+  [[nodiscard]] bool isLubricate() const override;
   [[nodiscard]] uint8_t getExternalPowerPin() const override;
   [[nodiscard]] uint8_t getPumpPin() const override;
   [[nodiscard]] uint8_t getWheelSensorPin() const override;
-
   [[nodiscard]] uint64_t getPumpTimeout() const override;
-  [[nodiscard]] uint64_t getWheelLength() const override;
-
+  [[nodiscard]] float getWheelLength() const override;
   [[nodiscard]] float getMinimalSpeed() const override;
   [[nodiscard]] float getDistanceForEnable() const override;
   [[nodiscard]] float getTotalDistance() const override;
   [[nodiscard]] float getNextDistance() const override;
 
 public:
+  void setLubricate(bool lubricate) override;
+  void setPumpTimeout(uint64_t timeout) override;
+  void setWheelLength(float wheelLength) override;
+  void setMinimalSpeed(float minimalSpeed) override;
+  void setDistanceForEnable(float distance) override;
   void saveTotalDistance(float distance) override;
   void saveNextDistance(float distance) override;
+
+private:
+  nvs_handle_t m_storageHandle;
 };

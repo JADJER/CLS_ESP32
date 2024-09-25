@@ -31,10 +31,14 @@ public:
   explicit Pump(uint8_t numberOfPin);
 
 public:
+  [[nodiscard]] bool isEnabled() const;
+
+public:
   void enable();
   void disable();
 
 private:
+  bool m_enable;
   PumpPin m_pumpPin;
 };
 
