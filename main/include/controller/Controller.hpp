@@ -49,5 +49,5 @@ private:
   ExternalPowerPtr m_externalPowerPtr;
 
 private:
-  bool m_pumpEnable;
+  bool m_lubricate;
 };

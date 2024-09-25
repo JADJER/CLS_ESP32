@@ -20,24 +20,23 @@
 
 #include "gpio/InputPin.hpp"
 
+constexpr uint64_t const PER_MICROSECOND = 1000000;
+
 WheelSensor::WheelSensor(uint8_t const numberOfPin, float const wheelLength) : m_wheelLength(wheelLength),
                                                                                m_wheelSensorPin(std::make_unique<gpio::InputPin>(numberOfPin, PinLevel::PIN_LEVEL_HIGH)) {
 }
 
 float WheelSensor::getDistance() const {
-  auto const wheelCount = m_wheelSensorPin->getCount();
-  auto const distance = m_wheelLength * static_cast<float>(wheelCount);
+  uint64_t const wheelCount = m_wheelSensorPin->getCount();
+  float const distance = m_wheelLength * static_cast<float>(wheelCount);
 
   return distance;
 }
 
 float WheelSensor::getSpeed() const {
-  auto const delay = m_wheelSensorPin->getDelay();
-  if (not delay) {
-    return 0;
-  }
-
-  auto const speed = m_wheelLength / static_cast<float>(delay);
+  uint64_t const delay_InMicroseconds = m_wheelSensorPin->getDelay();
+  float const delay_InSeconds = static_cast<float>(delay_InMicroseconds) / PER_MICROSECOND;
+  float const speed = m_wheelLength / delay_InSeconds;
 
   return speed;
 }
