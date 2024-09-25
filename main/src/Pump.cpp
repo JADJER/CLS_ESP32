@@ -29,12 +29,20 @@ bool Pump::isEnabled() const {
 }
 
 void Pump::enable() {
+  if (isEnabled()) {
+    return;
+  }
+
   m_pumpPin->setLevel(gpio::PIN_LEVEL_HIGH);
 
   m_enable = true;
 }
 
 void Pump::disable() {
+  if (not isEnabled()) {
+    return;
+  }
+
   m_pumpPin->setLevel(gpio::PIN_LEVEL_LOW);
 
   m_enable = false;
