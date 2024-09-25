@@ -28,6 +28,7 @@ public:
 
 public:
   [[nodiscard]] virtual bool isLubricate() const = 0;
+  [[nodiscard]] virtual bool isManualLubricate() const = 0;
   [[nodiscard]] virtual uint8_t getExternalPowerPin() const = 0;
   [[nodiscard]] virtual uint8_t getPumpPin() const = 0;
   [[nodiscard]] virtual uint8_t getWheelSensorPin() const = 0;
@@ -40,6 +41,7 @@ public:
 
 public:
   virtual void setLubricate(bool lubricate) = 0;
+  virtual void setManualLubricate(bool lubricate) = 0;
   virtual void setPumpTimeout(uint64_t timeout) = 0;
   virtual void setWheelLength(float wheelLength) = 0;
   virtual void setMinimalSpeed(float minimalSpeed) = 0;

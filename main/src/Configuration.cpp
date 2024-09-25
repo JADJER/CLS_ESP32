@@ -44,7 +44,9 @@ esp_err_t nvs_get_float(nvs_handle_t handle, const char *key, float *value) {
   return err;
 }
 
-Configuration::Configuration() : m_storageHandle(0) {
+Configuration::Configuration() : m_isManualLubricate(false),
+                                 m_storageHandle(0) {
+
   esp_err_t err = nvs_flash_init();
   if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
     ESP_ERROR_CHECK(nvs_flash_erase());
@@ -66,6 +68,10 @@ bool Configuration::isLubricate() const {
   nvs_get_u8(m_storageHandle, "lubricate", &lubricate);
 
   return lubricate;
+}
+
+bool Configuration::isManualLubricate() const {
+  return m_isManualLubricate;
 }
 
 uint8_t Configuration::getExternalPowerPin() const {
@@ -138,6 +144,10 @@ float Configuration::getNextDistance() const {
 
 void Configuration::setLubricate(bool lubricate) {
   ESP_ERROR_CHECK(nvs_set_i8(m_storageHandle, "lubricate", lubricate));
+}
+
+void Configuration::setManualLubricate(bool lubricate) {
+  m_isManualLubricate = lubricate;
 }
 
 void Configuration::setPumpTimeout(uint64_t timeout) {

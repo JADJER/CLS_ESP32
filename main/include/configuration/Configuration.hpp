@@ -29,6 +29,7 @@ public:
 
 public:
   [[nodiscard]] bool isLubricate() const override;
+  [[nodiscard]] bool isManualLubricate() const override;
   [[nodiscard]] uint8_t getExternalPowerPin() const override;
   [[nodiscard]] uint8_t getPumpPin() const override;
   [[nodiscard]] uint8_t getWheelSensorPin() const override;
@@ -41,6 +42,7 @@ public:
 
 public:
   void setLubricate(bool lubricate) override;
+  void setManualLubricate(bool lubricate) override;
   void setPumpTimeout(uint64_t timeout) override;
   void setWheelLength(float wheelLength) override;
   void setMinimalSpeed(float minimalSpeed) override;
@@ -49,5 +51,6 @@ public:
   void saveNextDistance(float distance) override;
 
 private:
+  bool m_isManualLubricate;
   nvs_handle_t m_storageHandle;
 };

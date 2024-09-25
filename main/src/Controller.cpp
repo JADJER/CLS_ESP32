@@ -45,6 +45,7 @@ void Controller::spinOnce() {
   }
 
   bool const lubricate = m_configuration->isLubricate();
+
   float const speed = m_wheelSensorPtr->getSpeed();
   float const actualDistance = m_wheelSensorPtr->getDistance();
   float const savedDistance = m_configuration->getTotalDistance();
@@ -60,6 +61,11 @@ void Controller::spinOnce() {
            m_pumpPtr->isEnabled() ? "True" : "False");
 
   if (totalDistance >= nextDistance) {
+    m_configuration->setLubricate(true);
+  }
+
+  bool const manualLubricate = m_configuration->isManualLubricate();
+  if (manualLubricate) {
     m_configuration->setLubricate(true);
   }
 
@@ -101,6 +107,7 @@ void Controller::pumpEnable() {
   uint64_t const pumpTimeout_InMicroseconds = pumpTimeout_InSeconds * PER_MICROSECOND;
 
   m_timerPtr->start(pumpTimeout_InMicroseconds, [this] {
+    m_configuration->setManualLubricate(false);
     m_configuration->setLubricate(false);
 
     float const actualDistance = m_wheelSensorPtr->getDistance();
