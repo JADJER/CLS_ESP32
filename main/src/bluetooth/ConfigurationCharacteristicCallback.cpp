@@ -16,14 +16,14 @@
 // Created by jadjer on 9/25/24.
 //
 
-#include "bluetooth/CharacteristicCallback.hpp"
+#include "bluetooth/characteristic/ConfigurationCharacteristicCallback.hpp"
 
 #include "bluetooth/Identificator.hpp"
 
-CharacteristicCallback::CharacteristicCallback(ConfigurationPtr configuration) : m_configuration(std::move(configuration)) {
+ConfigurationCharacteristicCallback::ConfigurationCharacteristicCallback(ConfigurationPtr configuration) : m_configuration(std::move(configuration)) {
 }
 
-void CharacteristicCallback::onRead(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) {
+void ConfigurationCharacteristicCallback::onRead(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) {
   NimBLECharacteristicCallbacks::onRead(pCharacteristic, connInfo);
 
   NimBLEUUID const uuid = pCharacteristic->getUUID();
@@ -64,7 +64,7 @@ void CharacteristicCallback::onRead(NimBLECharacteristic *pCharacteristic, NimBL
   }
 }
 
-void CharacteristicCallback::onWrite(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) {
+void ConfigurationCharacteristicCallback::onWrite(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) {
   NimBLECharacteristicCallbacks::onWrite(pCharacteristic, connInfo);
 
   NimBLEUUID const uuid = pCharacteristic->getUUID();
@@ -95,14 +95,10 @@ void CharacteristicCallback::onWrite(NimBLECharacteristic *pCharacteristic, NimB
   }
 }
 
-void CharacteristicCallback::onStatus(NimBLECharacteristic *pCharacteristic, int code) {
+void ConfigurationCharacteristicCallback::onStatus(NimBLECharacteristic *pCharacteristic, int code) {
   NimBLECharacteristicCallbacks::onStatus(pCharacteristic, code);
-
-  printf("status");
 }
 
-void CharacteristicCallback::onSubscribe(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo, uint16_t subValue) {
+void ConfigurationCharacteristicCallback::onSubscribe(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo, uint16_t subValue) {
   NimBLECharacteristicCallbacks::onSubscribe(pCharacteristic, connInfo, subValue);
-
-  printf("subscribe");
 }

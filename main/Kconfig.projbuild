@@ -21,7 +21,7 @@ menu "Chain Lubrication System"
                 Wheel diameter in inches
 
         config WHEEL_MINIMAL_SPEED
-            int "wheel minimal speed"
+            int "Wheel minimal speed"
             default 5
             help
                 Wheel minimal speed in m/s

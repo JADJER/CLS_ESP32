@@ -67,7 +67,7 @@ bool Configuration::isLubricate() const {
 
   nvs_get_u8(m_storageHandle, "lubricate", &lubricate);
 
-  return lubricate;
+  return static_cast<bool>(lubricate);
 }
 
 bool Configuration::isManualLubricate() const {
@@ -143,7 +143,9 @@ float Configuration::getNextDistance() const {
 }
 
 void Configuration::setLubricate(bool lubricate) {
-  ESP_ERROR_CHECK(nvs_set_i8(m_storageHandle, "lubricate", lubricate));
+  auto const value = static_cast<uint8_t>(lubricate);
+
+  ESP_ERROR_CHECK(nvs_set_u8(m_storageHandle, "lubricate", value));
 }
 
 void Configuration::setManualLubricate(bool lubricate) {
@@ -151,7 +153,7 @@ void Configuration::setManualLubricate(bool lubricate) {
 }
 
 void Configuration::setPumpTimeout(uint64_t timeout) {
-  ESP_ERROR_CHECK(nvs_set_float(m_storageHandle, "pump_timeout", timeout));
+  ESP_ERROR_CHECK(nvs_set_u64(m_storageHandle, "pump_timeout", timeout));
 }
 
 void Configuration::setWheelLength(float wheelLength) {

@@ -22,10 +22,10 @@
 #include "configuration/interface/Configuration.hpp"
 
 
-class CharacteristicCallback : public NimBLECharacteristicCallbacks {
+class ConfigurationCharacteristicCallback : public NimBLECharacteristicCallbacks {
 public:
-  explicit CharacteristicCallback(ConfigurationPtr configuration);
-  ~CharacteristicCallback() override = default;
+  explicit ConfigurationCharacteristicCallback(ConfigurationPtr configuration);
+  ~ConfigurationCharacteristicCallback() override = default;
 
 public:
   void onRead(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) override;

@@ -21,20 +21,19 @@
 #include <memory>
 
 #include "NimBLECharacteristic.h"
-#include "NimBLEServer.h"
 #include "configuration/interface/Configuration.hpp"
 
 class Bluetooth {
   using CharacteristicCallbackPtr = std::unique_ptr<NimBLECharacteristicCallbacks>;
 
 public:
-  explicit Bluetooth(ConfigurationPtr configuration);
+  explicit Bluetooth(ConfigurationPtr const &configuration);
   ~Bluetooth();
 
 public:
   void advertise();
 
 private:
-  NimBLEServer *m_server;
-  CharacteristicCallbackPtr m_characteristicCallback;
+  CharacteristicCallbackPtr m_otaCharacteristicCallback;
+  CharacteristicCallbackPtr m_configurationCharacteristicCallback;
 };
