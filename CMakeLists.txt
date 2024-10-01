@@ -4,5 +4,5 @@ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 project(CLS
         DESCRIPTION "Chain lubrication system for motorcycles"
-        HOMEPAGE_URL https://github.com/jadjer/chain-lubrication-system-esp32
+        HOMEPAGE_URL https://github.com/jadjer/cls-esp32
         LANGUAGES CXX)
