@@ -20,6 +20,22 @@ jobs:
         uses: espressif/esp-idf-ci-action@v1
         with:
           esp_idf_version: v5.3.1
+          target: esp32
+          path: '.'
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/CLS.bin
+          asset_name: cls-esp32-$tag.bin
+          tag: ${{ github.ref }}
+          overwrite: true
+
+      - name: esp-idf build
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.3.1
           target: esp32s3
           path: '.'
 
@@ -28,6 +44,6 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: build/CLS.bin
-          asset_name: chain-lubrication-system-esp32s3-$tag.bin
+          asset_name: cls-esp32s3-$tag.bin
           tag: ${{ github.ref }}
           overwrite: true
