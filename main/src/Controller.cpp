@@ -45,10 +45,12 @@ void Controller::spinOnce() {
   }
 
   bool const lubricate = m_configuration->isLubricate();
+  bool const manualLubricate = m_configuration->isManualLubricate();
+
   float const speed = m_wheelSensorPtr->getSpeed();
   float const actualDistance = m_wheelSensorPtr->getDistance();
   float const savedDistance = m_configuration->getTotalDistance();
-  float const totalDistance = savedDistance + actualDistance;
+  float const totalDistance = actualDistance + savedDistance;
   float const nextDistance = m_configuration->getNextDistance();
 
   ESP_LOGI("Controller",
@@ -59,7 +61,7 @@ void Controller::spinOnce() {
            lubricate ? "True" : "False",
            m_pumpPtr->isEnabled() ? "True" : "False");
 
-  if (totalDistance >= nextDistance) {
+  if ((totalDistance >= nextDistance) or manualLubricate) {
     m_configuration->setLubricate(true);
   }
 
@@ -80,7 +82,7 @@ void Controller::sleep() {
 
   float const actualDistance = m_wheelSensorPtr->getDistance();
   float const savedDistance = m_configuration->getTotalDistance();
-  float const totalDistance = savedDistance + actualDistance;
+  float const totalDistance = actualDistance + savedDistance;
 
   m_configuration->saveTotalDistance(totalDistance);
 
@@ -101,14 +103,15 @@ void Controller::pumpEnable() {
   uint64_t const pumpTimeout_InMicroseconds = pumpTimeout_InSeconds * PER_MICROSECOND;
 
   m_timerPtr->start(pumpTimeout_InMicroseconds, [this] {
-    m_configuration->setLubricate(false);
-
     float const actualDistance = m_wheelSensorPtr->getDistance();
     float const savedDistance = m_configuration->getTotalDistance();
-    float const totalDistance = savedDistance + actualDistance;
+    float const totalDistance = actualDistance + savedDistance;
     float const distanceForEnable = m_configuration->getDistanceForEnable();
     float const nextDistance = totalDistance + distanceForEnable;
 
+    m_configuration->setLubricate(false);
+    m_configuration->setManualLubricate(false);
+    m_configuration->saveTotalDistance(totalDistance);
     m_configuration->saveNextDistance(nextDistance);
 
     pumpDisable();

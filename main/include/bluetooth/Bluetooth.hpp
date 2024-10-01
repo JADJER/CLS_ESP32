@@ -13,19 +13,27 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 8/9/24.
+// Created by jadjer on 9/25/24.
 //
 
-#include "bluetooth/Bluetooth.hpp"
-#include "configuration/Configuration.hpp"
-#include "controller/Controller.hpp"
+#pragma once
 
-extern "C" void app_main() {
-  auto configuration = std::make_shared<Configuration>();
+#include <memory>
 
-  Bluetooth bluetooth(configuration);
-  bluetooth.advertise();
+#include "NimBLECharacteristic.h"
+#include "configuration/interface/Configuration.hpp"
 
-  Controller controller(configuration);
-  controller.spin();
-}
+class Bluetooth {
+  using CharacteristicCallbackPtr = std::unique_ptr<NimBLECharacteristicCallbacks>;
+
+public:
+  explicit Bluetooth(ConfigurationPtr const &configuration);
+  ~Bluetooth();
+
+public:
+  void advertise();
+
+private:
+  CharacteristicCallbackPtr m_otaCharacteristicCallback;
+  CharacteristicCallbackPtr m_configurationCharacteristicCallback;
+};
