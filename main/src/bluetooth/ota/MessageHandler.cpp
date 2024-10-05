@@ -22,13 +22,13 @@ constexpr auto const BINARY_ACK_CRC_ERROR = 0x0001;
 constexpr auto const BINARY_ACK_SECTOR_INDEX_ERROR = 0x0002;
 constexpr auto const BINARY_ACK_PAYLOAD_LENGTH_ERROR = 0x0003;
 
-MessageHandler::MessageHandler(NimBLECharacteristic *dataCharacteristic, NimBLECharacteristic *commandCharacteristic) : m_updater(new Updater),
-                                                                                                                        m_dataCharacteristic(dataCharacteristic),
-                                                                                                                        m_commandCharacteristic(commandCharacteristic),
-                                                                                                                        m_firmwareBuffer(new std::uint8_t[OTA_BLOCK_SIZE]) {
+MessageHandler::MessageHandler(CharacteristicPtr dataCharacteristic, CharacteristicPtr commandCharacteristic) : m_updater(std::make_unique<Updater>()),
+                                                                                                                m_dataCharacteristic(dataCharacteristic),
+                                                                                                                m_commandCharacteristic(commandCharacteristic),
+                                                                                                                m_firmwareBuffer(new std::uint8_t[OTA_BLOCK_SIZE]) {
 }
 
-void MessageHandler::dataHandle(const std::uint8_t *data, std::size_t length) {
+void MessageHandler::dataHandle(std::uint8_t const *data, std::size_t const length) {
   uint8_t commandAnswer[COMMAND_ANSWER_LENGTH] = {0x03, 0x00, 0x00, 0x00, 0x00,
                                                   0x00, 0x00, 0x00, 0x00, 0x00,
                                                   0x00, 0x00, 0x00, 0x00, 0x00,
@@ -85,13 +85,12 @@ void MessageHandler::dataHandle(const std::uint8_t *data, std::size_t length) {
 
 sector_end:
   if (m_firmwareBufferOffset < OTA_BLOCK_SIZE) {
-    m_updater->writeData(m_firmwareBuffer, m_firmwareBufferOffset);
+    //    m_updater->writeData(m_firmwareBuffer, m_firmwareBufferOffset);
   } else {
-    m_updater->writeData(m_firmwareBuffer, OTA_BLOCK_SIZE);
+    //    m_updater->writeData(m_firmwareBuffer, OTA_BLOCK_SIZE);
   }
 
-  m_firmwareBufferOffset = 0;
-  std::memset(m_firmwareBuffer, 0x0, OTA_BLOCK_SIZE);
+  resetBuffer();
 
   commandAnswer[0] = data[0];
   commandAnswer[1] = data[1];
@@ -104,7 +103,7 @@ sector_end:
   m_dataCharacteristic->indicate(commandAnswer, COMMAND_ANSWER_LENGTH);
 }
 
-void MessageHandler::commandHandle(const std::uint8_t *data, std::size_t length) {
+void MessageHandler::commandHandle(std::uint8_t const *data, std::size_t const length) {
   uint8_t commandAnswer[COMMAND_ANSWER_LENGTH] = {0x03, 0x00, 0x00, 0x00, 0x00,
                                                   0x00, 0x00, 0x00, 0x00, 0x00,
                                                   0x00, 0x00, 0x00, 0x00, 0x00,
@@ -130,9 +129,9 @@ void MessageHandler::commandHandle(const std::uint8_t *data, std::size_t length)
 
     ESP_LOGI(TAG, "recv ota start cmd, fw_length = %" PRIu32 "", m_otaTotalLength);
 
-    m_updater->begin(m_otaTotalLength);
+    //    m_updater->begin(m_otaTotalLength);
 
-    std::memset(m_firmwareBuffer, 0x0, OTA_BLOCK_SIZE);
+    resetBuffer();
 
     commandAnswer[2] = 0x01;
     commandAnswer[3] = 0x00;
@@ -152,8 +151,8 @@ void MessageHandler::commandHandle(const std::uint8_t *data, std::size_t length)
 
     ESP_LOGI(TAG, "recv ota end cmd");
 
-    m_updater->end();
-    m_updater->install();
+    //    m_updater->end();
+    //    m_updater->install();
 
     commandAnswer[2] = 0x02;
     commandAnswer[3] = 0x00;
@@ -163,4 +162,9 @@ void MessageHandler::commandHandle(const std::uint8_t *data, std::size_t length)
 
     m_commandCharacteristic->indicate(commandAnswer, COMMAND_ANSWER_LENGTH);
   }
+}
+
+void MessageHandler::resetBuffer() {
+  m_firmwareBufferOffset = 0;
+  std::memset(m_firmwareBuffer, 0x0, OTA_BLOCK_SIZE);
 }
