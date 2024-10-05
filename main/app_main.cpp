@@ -21,7 +21,7 @@
 #include "controller/Controller.hpp"
 
 extern "C" void app_main() {
-  auto const configuration = std::make_shared<Configuration>();
+  auto configuration = std::make_shared<Configuration>();
 
   Bluetooth bluetooth(configuration);
   bluetooth.advertise();

@@ -21,7 +21,7 @@
 #include <esp_log.h>
 #include <esp_sleep.h>
 
-constexpr auto const MICROSECONDS_PER_SECOND = 1000000;
+auto const MICROSECONDS_PER_SECOND = 1000000;
 
 Controller::Controller(ConfigurationPtr configuration) : m_configuration(std::move(configuration)),
                                                          m_pumpPtr(std::make_unique<Pump>(m_configuration->getPumpPin())),

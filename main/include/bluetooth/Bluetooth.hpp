@@ -27,7 +27,7 @@ class Bluetooth {
   using CharacteristicCallbackPtr = std::unique_ptr<NimBLECharacteristicCallbacks>;
 
 public:
-  explicit Bluetooth(ConfigurationPtr const &configuration);
+  explicit Bluetooth(ConfigurationPtr configuration);
   ~Bluetooth();
 
 public:
