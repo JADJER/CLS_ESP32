@@ -32,7 +32,7 @@ bool Timer::isEnabled() const {
   return esp_timer_is_active(m_timerHandle);
 }
 
-void Timer::start(std::uint32_t const delay, Callback callback) {
+void Timer::start(std::uint32_t const delay, TimerCallback callback) {
   if (isEnabled()) {
     return;
   }

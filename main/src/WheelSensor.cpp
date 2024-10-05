@@ -20,7 +20,7 @@
 
 #include "gpio/InputPin.hpp"
 
-constexpr auto const MICROSECONDS_PER_SECOND = 1000000;
+auto constexpr MICROSECONDS_PER_SECOND = 1000000;
 
 WheelSensor::WheelSensor(std::uint8_t const numberOfPin, float const wheelLength) : m_wheelLength(wheelLength),
                                                                                     m_wheelSensorPin(std::make_unique<gpio::InputPin>(numberOfPin, PinLevel::PIN_LEVEL_HIGH)) {
