@@ -21,6 +21,8 @@
 #include <esp_log.h>
 #include <esp_sleep.h>
 
+auto constexpr TAG = "Controller";
+
 auto constexpr MICROSECONDS_PER_SECOND = 1000000;
 
 Controller::Controller(ConfigurationPtr configuration) : m_configuration(std::move(configuration)),
@@ -44,41 +46,42 @@ void Controller::spinOnce() {
     sleep();
   }
 
-  auto const lubricate = m_configuration->isLubricate();
-  auto const manualLubricate = m_configuration->isManualLubricate();
-
-  auto const speed = m_wheelSensorPtr->getSpeed();
   auto const actualDistance = m_wheelSensorPtr->getDistance();
   auto const savedDistance = m_configuration->getTotalDistance();
   auto const totalDistance = actualDistance + savedDistance;
   auto const nextDistance = m_configuration->getNextDistance();
 
-  ESP_LOGI("Controller",
-           "Total distance: %f[m], next distance: %f[m], speed: %f[m/s], lubricate: %s, pump: %s",
-           totalDistance,
-           nextDistance,
-           speed,
-           lubricate ? "True" : "False",
-           m_pumpPtr->isEnabled() ? "True" : "False");
-
-  if ((totalDistance >= nextDistance) or manualLubricate) {
+  if (totalDistance >= nextDistance) {
+    ESP_LOGI(TAG, "The required distance has been covered for lubrication");
     m_configuration->setLubricate(true);
   }
 
-  auto const minimalSpeed = m_configuration->getMinimalSpeed();
+  auto const isManualLubricate = m_configuration->isManualLubricate();
+  if (isManualLubricate) {
+    ESP_LOGI(TAG, "Forced lubrication mode");
+    m_configuration->setLubricate(true);
+  }
 
-  if (speed < minimalSpeed) {
-    pumpDisable();
+  auto const isLubricate = m_configuration->isLubricate();
+  if (not isLubricate) {
+    ESP_LOGI(TAG, "Total distance: %f[m], next distance: %f[m]", totalDistance, nextDistance);
     return;
   }
 
-  if (lubricate) {
+  auto const speed = m_wheelSensorPtr->getSpeed();
+  auto const minimalSpeed = m_configuration->getMinimalSpeed();
+
+  if (speed >= minimalSpeed) {
     pumpEnable();
+    return;
   }
+
+  ESP_LOGI(TAG, "The vehicle's speed is too low (speed: %f[m/s], minimal speed: %f[m/s])", speed, minimalSpeed);
+  pumpDisable();
 }
 
 void Controller::sleep() {
-  ESP_LOGI("Controller", "External power is disabled. Sleeping");
+  ESP_LOGI(TAG, "The external power is turned off. Falling asleep");
 
   auto const actualDistance = m_wheelSensorPtr->getDistance();
   auto const savedDistance = m_configuration->getTotalDistance();
@@ -97,9 +100,15 @@ void Controller::pumpEnable() {
 
   m_pumpPtr->enable();
 
-  ESP_LOGI("Controller", "Pump enabled");
+  if (not m_pumpPtr->isEnabled()) {
+    ESP_LOGE(TAG, "The pump is not enabled");
+    return;
+  }
 
   auto const pumpTimeout_InSeconds = m_configuration->getPumpTimeout();
+
+  ESP_LOGI(TAG, "The pump is turned on for %lu seconds", pumpTimeout_InSeconds);
+
   auto const pumpTimeout_InMicroseconds = pumpTimeout_InSeconds * MICROSECONDS_PER_SECOND;
 
   m_timerPtr->start(pumpTimeout_InMicroseconds, [this] {
@@ -114,6 +123,8 @@ void Controller::pumpEnable() {
     m_configuration->saveTotalDistance(totalDistance);
     m_configuration->saveNextDistance(nextDistance);
 
+    ESP_LOGI(TAG, "End of the lubrication cycle");
+
     pumpDisable();
   });
 }
@@ -125,7 +136,12 @@ void Controller::pumpDisable() {
 
   m_pumpPtr->disable();
 
-  ESP_LOGI("Controller", "Pump disabled");
+  if (m_pumpPtr->isEnabled()) {
+    ESP_LOGE(TAG, "The pump is not disabled");
+    return;
+  }
+
+  ESP_LOGI(TAG, "The pump is disabled");
 
   m_timerPtr->stop();
 }

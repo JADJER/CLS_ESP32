@@ -22,11 +22,14 @@
 
 #include "gpio/InputPin.hpp"
 
-ExternalPower::ExternalPower(std::uint8_t const numberOfPin) : m_externalPowerPin(std::make_unique<gpio::InputPin>(numberOfPin, PinLevel::PIN_LEVEL_HIGH)) {
+auto constexpr EXTERNAL_POWER_ENABLED = gpio::PIN_LEVEL_LOW;
+auto constexpr EXTERNAL_POWER_DISABLED = gpio::PIN_LEVEL_HIGH;
 
-  ESP_ERROR_CHECK(esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(numberOfPin), PinLevel::PIN_LEVEL_LOW));
+ExternalPower::ExternalPower(std::uint8_t const numberOfPin) : m_externalPowerPin(std::make_unique<gpio::InputPin>(numberOfPin, EXTERNAL_POWER_DISABLED)) {
+
+  ESP_ERROR_CHECK(esp_sleep_enable_ext0_wakeup(static_cast<gpio_num_t>(numberOfPin), EXTERNAL_POWER_ENABLED));
 }
 
 bool ExternalPower::isEnabled() const {
-  return m_externalPowerPin->getLevel();
+  return (m_externalPowerPin->getLevel() == EXTERNAL_POWER_ENABLED);
 }

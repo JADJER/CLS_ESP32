@@ -20,11 +20,14 @@
 
 #include "gpio/OutputPin.hpp"
 
-Pump::Pump(std::uint8_t const numberOfPin) : m_pumpPin(std::make_unique<gpio::OutputPin>(numberOfPin)) {
+auto constexpr PUMP_ENABLED = gpio::PIN_LEVEL_HIGH;
+auto constexpr PUMP_DISABLED = gpio::PIN_LEVEL_LOW;
+
+Pump::Pump(std::uint8_t const numberOfPin) : m_pumpPin(std::make_unique<gpio::OutputPin>(numberOfPin, PUMP_DISABLED)) {
 }
 
 bool Pump::isEnabled() const {
-  return m_enable;
+  return (m_pumpPin->getLevel() == PUMP_ENABLED);
 }
 
 void Pump::enable() {
@@ -32,9 +35,7 @@ void Pump::enable() {
     return;
   }
 
-  m_pumpPin->setLevel(gpio::PIN_LEVEL_HIGH);
-
-  m_enable = true;
+  m_pumpPin->setLevel(PUMP_ENABLED);
 }
 
 void Pump::disable() {
@@ -42,7 +43,5 @@ void Pump::disable() {
     return;
   }
 
-  m_pumpPin->setLevel(gpio::PIN_LEVEL_LOW);
-
-  m_enable = false;
+  m_pumpPin->setLevel(PUMP_DISABLED);
 }
