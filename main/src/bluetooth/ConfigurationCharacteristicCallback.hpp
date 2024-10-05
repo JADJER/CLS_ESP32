@@ -34,5 +34,5 @@ public:
   void onSubscribe(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo, uint16_t subValue) override;
 
 private:
-  ConfigurationPtr m_configuration;
+  ConfigurationPtr m_configuration = nullptr;
 };

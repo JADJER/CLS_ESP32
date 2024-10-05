@@ -30,10 +30,10 @@ public:
 public:
   [[nodiscard]] bool isLubricate() const override;
   [[nodiscard]] bool isManualLubricate() const override;
-  [[nodiscard]] uint8_t getExternalPowerPin() const override;
-  [[nodiscard]] uint8_t getPumpPin() const override;
-  [[nodiscard]] uint8_t getWheelSensorPin() const override;
-  [[nodiscard]] uint64_t getPumpTimeout() const override;
+  [[nodiscard]] std::uint8_t getExternalPowerPin() const override;
+  [[nodiscard]] std::uint8_t getPumpPin() const override;
+  [[nodiscard]] std::uint8_t getWheelSensorPin() const override;
+  [[nodiscard]] std::uint32_t getPumpTimeout() const override;
   [[nodiscard]] float getWheelLength() const override;
   [[nodiscard]] float getMinimalSpeed() const override;
   [[nodiscard]] float getDistanceForEnable() const override;
@@ -43,7 +43,7 @@ public:
 public:
   void setLubricate(bool lubricate) override;
   void setManualLubricate(bool lubricate) override;
-  void setPumpTimeout(uint64_t timeout) override;
+  void setPumpTimeout(std::uint32_t timeout) override;
   void setWheelLength(float wheelLength) override;
   void setMinimalSpeed(float minimalSpeed) override;
   void setDistanceForEnable(float distance) override;

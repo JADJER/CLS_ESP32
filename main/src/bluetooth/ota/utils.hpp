@@ -6,9 +6,9 @@
 
 #include <cstdint>
 
-uint16_t calculateCRC16(std::uint8_t const *buf, std::size_t length) {
-  uint16_t crc16 = 0;
-  int32_t i;
+std::uint16_t calculateCRC16(std::uint8_t const *buf, std::size_t length) {
+  std::uint16_t crc16 = 0;
+  std::int32_t i;
 
   while (length--) {
     crc16 ^= *buf++ << 8;

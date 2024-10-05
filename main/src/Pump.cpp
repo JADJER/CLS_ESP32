@@ -20,8 +20,7 @@
 
 #include "gpio/OutputPin.hpp"
 
-Pump::Pump(uint8_t const numberOfPin) : m_enable(false),
-                                        m_pumpPin(std::make_unique<gpio::OutputPin>(numberOfPin)) {
+Pump::Pump(std::uint8_t const numberOfPin) : m_pumpPin(std::make_unique<gpio::OutputPin>(numberOfPin)) {
 }
 
 bool Pump::isEnabled() const {

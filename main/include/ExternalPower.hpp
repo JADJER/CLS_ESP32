@@ -28,14 +28,13 @@ class ExternalPower {
   using ExternalPowerPin = InputPinPtr<PinLevel>;
 
 public:
-  explicit ExternalPower(uint8_t numberOfPin);
+  explicit ExternalPower(std::uint8_t numberOfPin);
 
 public:
   [[nodiscard]] bool isEnabled() const;
 
 private:
-  uint8_t m_numberOfPin;
-  ExternalPowerPin m_externalPowerPin;
+  ExternalPowerPin m_externalPowerPin = nullptr;
 };
 
 #include <memory>

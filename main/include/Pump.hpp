@@ -28,7 +28,7 @@ class Pump {
   using PumpPin = OutputPinPtr<PinLevel>;
 
 public:
-  explicit Pump(uint8_t numberOfPin);
+  explicit Pump(std::uint8_t numberOfPin);
 
 public:
   [[nodiscard]] bool isEnabled() const;
@@ -38,8 +38,8 @@ public:
   void disable();
 
 private:
-  bool m_enable;
-  PumpPin m_pumpPin;
+  bool m_enable = false;
+  PumpPin m_pumpPin = nullptr;
 };
 
 #include <memory>

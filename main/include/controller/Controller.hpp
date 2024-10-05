@@ -23,10 +23,10 @@
 #include "Timer.hpp"
 #include "WheelSensor.hpp"
 
-#include "controller/ControllerBase.hpp"
 #include "configuration/interface/Configuration.hpp"
+#include "controller/ControllerBase.hpp"
 
-class Controller : public ControllerBase{
+class Controller : public ControllerBase {
 public:
   explicit Controller(ConfigurationPtr configuration);
   ~Controller() override = default;
@@ -40,11 +40,11 @@ private:
   void sleep();
 
 private:
-  ConfigurationPtr m_configuration;
+  ConfigurationPtr m_configuration = nullptr;
 
 private:
-  PumpPtr m_pumpPtr;
-  TimerPtr m_timerPtr;
-  WheelSensorPtr m_wheelSensorPtr;
-  ExternalPowerPtr m_externalPowerPtr;
+  PumpPtr m_pumpPtr = nullptr;
+  TimerPtr m_timerPtr = nullptr;
+  WheelSensorPtr m_wheelSensorPtr = nullptr;
+  ExternalPowerPtr m_externalPowerPtr = nullptr;
 };
