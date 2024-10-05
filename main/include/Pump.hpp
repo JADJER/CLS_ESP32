@@ -38,7 +38,6 @@ public:
   void disable();
 
 private:
-  bool m_enable = false;
   PumpPin m_pumpPin = nullptr;
 };
 
