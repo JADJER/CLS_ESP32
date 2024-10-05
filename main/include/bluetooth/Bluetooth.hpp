@@ -34,6 +34,6 @@ public:
   void advertise();
 
 private:
-  CharacteristicCallbackPtr m_otaCharacteristicCallback;
-  CharacteristicCallbackPtr m_configurationCharacteristicCallback;
+  CharacteristicCallbackPtr m_otaCharacteristicCallback = nullptr;
+  CharacteristicCallbackPtr m_configurationCharacteristicCallback = nullptr;
 };

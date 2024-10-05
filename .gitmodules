@@ -1,6 +1,0 @@
-[submodule "components/gpio"]
-	path = components/gpio
-	url = https://github.com/jadjer/esp32-gpio.git
-[submodule "components/nimble"]
-	path = components/nimble
-	url = https://github.com/h2zero/esp-nimble-cpp.git

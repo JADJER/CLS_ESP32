@@ -1,0 +1,8 @@
+dependencies:
+  idf: ">=5.3"
+  gpio:
+    git: https://github.com/jadjer/esp32-gpio.git
+    version: "*"
+  nimble:
+    git: https://github.com/h2zero/esp-nimble-cpp.git
+    version: "*"
