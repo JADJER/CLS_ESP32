@@ -22,7 +22,6 @@
 
 class ControllerBase {
 public:
-  ControllerBase();
   virtual ~ControllerBase() = default;
 
 public:
@@ -32,5 +31,5 @@ protected:
   virtual void spinOnce() = 0;
 
 private:
-  esp_task_wdt_user_handle_t m_watchdogHandle;
+  esp_task_wdt_user_handle_t m_watchdogHandle = nullptr;
 };

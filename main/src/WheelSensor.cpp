@@ -20,25 +20,23 @@
 
 #include "gpio/InputPin.hpp"
 
-constexpr uint64_t const PER_MICROSECOND = 1000000;
+constexpr auto const MICROSECONDS_PER_SECOND = 1000000;
 
-WheelSensor::WheelSensor(uint8_t const numberOfPin, float const wheelLength) : m_wheelLength(wheelLength),
-                                                                               m_wheelSensorPin(std::make_unique<gpio::InputPin>(numberOfPin, PinLevel::PIN_LEVEL_HIGH)) {
+WheelSensor::WheelSensor(std::uint8_t const numberOfPin, float const wheelLength) : m_wheelLength(wheelLength),
+                                                                                    m_wheelSensorPin(std::make_unique<gpio::InputPin>(numberOfPin, PinLevel::PIN_LEVEL_HIGH)) {
 }
 
 float WheelSensor::getDistance() const {
-  uint64_t const wheelCount = m_wheelSensorPin->getCount();
-
-  float const distance = m_wheelLength * static_cast<float>(wheelCount);
+  auto const wheelCount = m_wheelSensorPin->getCount();
+  auto const distance = m_wheelLength * static_cast<float>(wheelCount);
 
   return distance;
 }
 
 float WheelSensor::getSpeed() const {
-  uint64_t const delay_InMicroseconds = m_wheelSensorPin->getDelay();
-  float const delay_InSeconds = static_cast<float>(delay_InMicroseconds) / PER_MICROSECOND;
-
-  float const speed = m_wheelLength / delay_InSeconds;
+  auto const delay_InMicroseconds = m_wheelSensorPin->getDelay();
+  auto const delay_InSeconds = static_cast<float>(delay_InMicroseconds) / MICROSECONDS_PER_SECOND;
+  auto const speed = m_wheelLength / delay_InSeconds;
 
   return speed;
 }

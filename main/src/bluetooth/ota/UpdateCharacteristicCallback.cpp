@@ -37,10 +37,10 @@ void UpdateCharacteristicCallback::onWrite(NimBLECharacteristic *pCharacteristic
   }
 }
 
-void UpdateCharacteristicCallback::onStatus(NimBLECharacteristic *pCharacteristic, int code) {
+void UpdateCharacteristicCallback::onStatus(NimBLECharacteristic *pCharacteristic, int const code) {
   NimBLECharacteristicCallbacks::onStatus(pCharacteristic, code);
 }
 
-void UpdateCharacteristicCallback::onSubscribe(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo, uint16_t subValue) {
+void UpdateCharacteristicCallback::onSubscribe(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo, std::uint16_t const subValue) {
   NimBLECharacteristicCallbacks::onSubscribe(pCharacteristic, connInfo, subValue);
 }

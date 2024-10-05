@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <functional>
 
 #include <esp_timer.h>
@@ -28,15 +29,15 @@ public:
   [[nodiscard]] bool isEnabled() const;
 
 public:
-  void start(uint64_t delay, Callback callback);
+  void start(std::uint32_t delay, Callback callback);
   void stop();
 
 private:
-  Callback m_callback;
-  esp_timer_handle_t m_timerHandle;
+  static void callback(void *arg);
 
 private:
-  static void callback(void *arg);
+  Callback m_callback = nullptr;
+  esp_timer_handle_t m_timerHandle = nullptr;
 };
 
 #include <memory>

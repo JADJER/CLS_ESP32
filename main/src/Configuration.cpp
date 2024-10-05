@@ -25,24 +25,26 @@
 
 #include "sdkconfig.h"
 
-esp_err_t nvs_set_float(nvs_handle_t handle, const char *key, float value) {
-  uint64_t buf = 0;
+esp_err_t nvs_set_float(nvs_handle_t handle, char const *key, float value) {
+  std::uint32_t buf = 0;
 
   memcpy(&buf, &value, sizeof(float));
 
-  return nvs_set_u64(handle, key, buf);
+  return nvs_set_u32(handle, key, buf);
 }
 
-esp_err_t nvs_get_float(nvs_handle_t handle, const char *key, float *value) {
-  uint64_t buf = 0;
+esp_err_t nvs_get_float(nvs_handle_t handle, char const *key, float *value) {
+  std::uint32_t buf = 0;
 
-  esp_err_t err = nvs_get_u64(handle, key, &buf);
+  esp_err_t err = nvs_get_u32(handle, key, &buf);
   if (err == ESP_OK) {
     memcpy(value, &buf, sizeof(float));
   }
 
   return err;
 }
+
+constexpr auto const INCH_TO_METER = 0.0254;
 
 Configuration::Configuration() : m_isManualLubricate(false),
                                  m_storageHandle(0) {
@@ -63,7 +65,7 @@ Configuration::~Configuration() {
 }
 
 bool Configuration::isLubricate() const {
-  uint8_t lubricate = 0;
+  std::uint8_t lubricate = 0;
 
   nvs_get_u8(m_storageHandle, "lubricate", &lubricate);
 
@@ -74,35 +76,36 @@ bool Configuration::isManualLubricate() const {
   return m_isManualLubricate;
 }
 
-uint8_t Configuration::getExternalPowerPin() const {
-  uint8_t const externalPowerPin = CONFIG_EXTERNAL_POWER_PIN;
+std::uint8_t Configuration::getExternalPowerPin() const {
+  std::uint8_t const externalPowerPin = CONFIG_EXTERNAL_POWER_PIN;
 
   return externalPowerPin;
 }
 
-uint8_t Configuration::getPumpPin() const {
-  uint8_t const pumpPin = CONFIG_PUMP_PIN;
+std::uint8_t Configuration::getPumpPin() const {
+  std::uint8_t const pumpPin = CONFIG_PUMP_PIN;
 
   return pumpPin;
 }
 
-uint8_t Configuration::getWheelSensorPin() const {
-  uint8_t const wheelSensorPin = CONFIG_WHEEL_SENSOR_PIN;
+std::uint8_t Configuration::getWheelSensorPin() const {
+  std::uint8_t const wheelSensorPin = CONFIG_WHEEL_SENSOR_PIN;
 
   return wheelSensorPin;
 }
 
-uint64_t Configuration::getPumpTimeout() const {
-  uint64_t pumpTimeout = CONFIG_PUMP_TIMEOUT;
+std::uint32_t Configuration::getPumpTimeout() const {
+  std::uint32_t pumpTimeout = CONFIG_PUMP_TIMEOUT;
 
-  nvs_get_u64(m_storageHandle, "pump_timeout", &pumpTimeout);
+  nvs_get_u32(m_storageHandle, "pump_timeout", &pumpTimeout);
 
   return pumpTimeout;
 }
 
 float Configuration::getWheelLength() const {
-  uint64_t const wheelDiameter_InInches = CONFIG_WHEEL_DIAMETER;
-  float const wheelDiameter_InMeter = static_cast<float>(wheelDiameter_InInches) * 0.0254;
+  std::uint32_t const wheelDiameter_InInches = CONFIG_WHEEL_DIAMETER;
+
+  float const wheelDiameter_InMeter = static_cast<float>(wheelDiameter_InInches) * INCH_TO_METER;
   float wheelLength = wheelDiameter_InMeter * static_cast<float>(M_PI);
 
   nvs_get_float(m_storageHandle, "wheel_length", &wheelLength);
@@ -143,7 +146,7 @@ float Configuration::getNextDistance() const {
 }
 
 void Configuration::setLubricate(bool lubricate) {
-  auto const value = static_cast<uint8_t>(lubricate);
+  auto const value = static_cast<std::uint8_t>(lubricate);
 
   ESP_ERROR_CHECK(nvs_set_u8(m_storageHandle, "lubricate", value));
 }
@@ -152,8 +155,8 @@ void Configuration::setManualLubricate(bool lubricate) {
   m_isManualLubricate = lubricate;
 }
 
-void Configuration::setPumpTimeout(uint64_t timeout) {
-  ESP_ERROR_CHECK(nvs_set_u64(m_storageHandle, "pump_timeout", timeout));
+void Configuration::setPumpTimeout(std::uint32_t timeout) {
+  ESP_ERROR_CHECK(nvs_set_u32(m_storageHandle, "pump_timeout", timeout));
 }
 
 void Configuration::setWheelLength(float wheelLength) {

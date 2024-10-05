@@ -10,20 +10,26 @@
 #include "Updater.hpp"
 
 class MessageHandler {
+  using CharacteristicPtr = NimBLECharacteristic *;
+  using Buffer = std::uint8_t *;
+
 public:
-  MessageHandler(NimBLECharacteristic *dataCharacteristic, NimBLECharacteristic *commandCharacteristic);
+  MessageHandler(CharacteristicPtr dataCharacteristic, CharacteristicPtr commandCharacteristic);
 
 public:
   void dataHandle(std::uint8_t const *data, std::size_t length);
   void commandHandle(std::uint8_t const *data, std::size_t length);
 
 private:
-  Updater *m_updater = nullptr;
-  NimBLECharacteristic *m_dataCharacteristic = nullptr;
-  NimBLECharacteristic *m_commandCharacteristic = nullptr;
+  void resetBuffer();
 
 private:
-  std::uint8_t *m_firmwareBuffer = nullptr;
+  UpdaterPtr m_updater = nullptr;
+  CharacteristicPtr m_dataCharacteristic = nullptr;
+  CharacteristicPtr m_commandCharacteristic = nullptr;
+
+private:
+  Buffer m_firmwareBuffer = nullptr;
 
 private:
   std::uint32_t m_currentSector = 0;

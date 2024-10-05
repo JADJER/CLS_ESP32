@@ -6,6 +6,8 @@
 
 #include "NimBLECharacteristic.h"
 
+#include <cstdint>
+
 #include "MessageHandler.hpp"
 
 class UpdateCharacteristicCallback : public NimBLECharacteristicCallbacks {
@@ -17,8 +19,8 @@ public:
   void onRead(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) override;
   void onWrite(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) override;
   void onStatus(NimBLECharacteristic *pCharacteristic, int code) override;
-  void onSubscribe(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo, uint16_t subValue) override;
+  void onSubscribe(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo, std::uint16_t subValue) override;
 
 private:
-  MessageHandlerPtr m_messageHandler;
+  MessageHandlerPtr m_messageHandler = nullptr;
 };

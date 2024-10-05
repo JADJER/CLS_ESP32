@@ -28,3 +28,7 @@ private:
   esp_ota_handle_t m_otaHandle = 0;
   esp_partition_t const *m_otaPartition = nullptr;
 };
+
+#include <memory>
+
+using UpdaterPtr = std::unique_ptr<Updater>;

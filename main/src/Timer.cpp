@@ -16,8 +16,7 @@
 
 #include <esp_timer.h>
 
-Timer::Timer() : m_timerHandle(nullptr) {
-
+Timer::Timer() {
   esp_timer_create_args_t const timerConfig = {
       .callback = &Timer::callback,
       .arg = this,
@@ -33,7 +32,7 @@ bool Timer::isEnabled() const {
   return esp_timer_is_active(m_timerHandle);
 }
 
-void Timer::start(uint64_t const delay, Callback callback) {
+void Timer::start(std::uint32_t const delay, Callback callback) {
   if (isEnabled()) {
     return;
   }
@@ -52,7 +51,9 @@ void Timer::stop() {
 }
 
 void Timer::callback(void *arg) {
-  auto const *timer = static_cast<Timer *>(arg);
+  auto const timer = static_cast<Timer *>(arg);
 
-  timer->m_callback();
+  if (timer->m_callback) {
+    timer->m_callback();
+  }
 }

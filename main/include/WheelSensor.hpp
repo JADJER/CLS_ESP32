@@ -28,15 +28,15 @@ class WheelSensor {
   using WheelSensorPin = InputPinPtr<PinLevel>;
 
 public:
-  WheelSensor(uint8_t numberOfPin, float wheelLength);
+  WheelSensor(std::uint8_t numberOfPin, float wheelLength);
 
 public:
   [[nodiscard]] float getDistance() const;
   [[nodiscard]] float getSpeed() const;
 
 private:
-  float m_wheelLength;
-  WheelSensorPin m_wheelSensorPin;
+  float m_wheelLength = 0;
+  WheelSensorPin m_wheelSensorPin = nullptr;
 };
 
 #include <memory>

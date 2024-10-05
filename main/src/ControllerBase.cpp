@@ -18,10 +18,7 @@
 
 #include "controller/ControllerBase.hpp"
 
-constexpr uint64_t const TASK_RESET_PERIOD_MICROSECOND = 3000;
-
-ControllerBase::ControllerBase() : m_watchdogHandle(nullptr) {
-}
+constexpr auto const TASK_RESET_PERIOD_MICROSECOND = 3000;
 
 [[noreturn]] void ControllerBase::spin() {
   ESP_ERROR_CHECK(esp_task_wdt_add_user("controller_spin", &m_watchdogHandle));
