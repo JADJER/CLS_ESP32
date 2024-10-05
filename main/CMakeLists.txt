@@ -9,11 +9,9 @@ set(SOURCES
 
         src/Pump.cpp
         src/Timer.cpp
-        src/Controller.cpp
         src/WheelSensor.cpp
         src/Configuration.cpp
         src/ExternalPower.cpp
-        src/ControllerBase.cpp
 
         src/bluetooth/Bluetooth.cpp
         src/bluetooth/ConfigurationCharacteristicCallback.cpp
@@ -21,6 +19,9 @@ set(SOURCES
         src/bluetooth/ota/Updater.cpp
         src/bluetooth/ota/MessageHandler.cpp
         src/bluetooth/ota/UpdateCharacteristicCallback.cpp
+
+        src/controller/Controller.cpp
+        src/controller/ControllerBase.cpp
 )
 
 idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS ${INCLUDE_DIRS})
