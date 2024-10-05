@@ -19,7 +19,7 @@
 
 #include <esp_timer.h>
 
-using Callback = std::function<void()>;
+using TimerCallback = std::function<void()>;
 
 class Timer {
 public:
@@ -29,14 +29,14 @@ public:
   [[nodiscard]] bool isEnabled() const;
 
 public:
-  void start(std::uint32_t delay, Callback callback);
+  void start(std::uint32_t delay, TimerCallback callback);
   void stop();
 
 private:
   static void callback(void *arg);
 
 private:
-  Callback m_callback = nullptr;
+  TimerCallback m_callback = nullptr;
   esp_timer_handle_t m_timerHandle = nullptr;
 };
 

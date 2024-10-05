@@ -8,19 +8,19 @@
 
 #include <esp_log.h>
 
-constexpr auto const TAG = "MessageHandler";
+auto constexpr TAG = "MessageHandler";
 
-constexpr auto const OTA_BLOCK_SIZE = 4096;
-constexpr auto const COMMAND_ANSWER_LENGTH = 20;
-constexpr auto const COMMAND_START = 0x0001;
-constexpr auto const COMMAND_END = 0x0002;
-constexpr auto const COMMAND_ACK = 0x0003;
-constexpr auto const COMMAND_ACK_ACCEPT = 0x0000;
-constexpr auto const COMMAND_ACK_REFUSE = 0x0001;
-constexpr auto const BINARY_ACK_SUCCESS = 0x0000;
-constexpr auto const BINARY_ACK_CRC_ERROR = 0x0001;
-constexpr auto const BINARY_ACK_SECTOR_INDEX_ERROR = 0x0002;
-constexpr auto const BINARY_ACK_PAYLOAD_LENGTH_ERROR = 0x0003;
+auto constexpr OTA_BLOCK_SIZE = 4096;
+auto constexpr COMMAND_ANSWER_LENGTH = 20;
+auto constexpr COMMAND_START = 0x0001;
+auto constexpr COMMAND_END = 0x0002;
+auto constexpr COMMAND_ACK = 0x0003;
+auto constexpr COMMAND_ACK_ACCEPT = 0x0000;
+auto constexpr COMMAND_ACK_REFUSE = 0x0001;
+auto constexpr BINARY_ACK_SUCCESS = 0x0000;
+auto constexpr BINARY_ACK_CRC_ERROR = 0x0001;
+auto constexpr BINARY_ACK_SECTOR_INDEX_ERROR = 0x0002;
+auto constexpr BINARY_ACK_PAYLOAD_LENGTH_ERROR = 0x0003;
 
 MessageHandler::MessageHandler(CharacteristicPtr dataCharacteristic, CharacteristicPtr commandCharacteristic) : m_updater(std::make_unique<Updater>()),
                                                                                                                 m_dataCharacteristic(dataCharacteristic),

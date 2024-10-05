@@ -6,7 +6,7 @@
 
 #include <esp_log.h>
 
-constexpr auto const TAG = "Update";
+auto constexpr TAG = "Update";
 
 Updater::Updater() : m_otaPartition(esp_ota_get_next_update_partition(nullptr)) {
   esp_ota_mark_app_valid_cancel_rollback();

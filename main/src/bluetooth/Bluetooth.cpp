@@ -25,7 +25,7 @@
 #include "ota/MessageHandler.hpp"
 #include "ota/UpdateCharacteristicCallback.hpp"
 
-constexpr auto const MTU = 517;
+auto constexpr MTU = 517;
 
 Bluetooth::Bluetooth(ConfigurationPtr configuration) : m_otaCharacteristicCallback(nullptr),
                                                        m_configurationCharacteristicCallback(std::make_unique<ConfigurationCharacteristicCallback>(std::move(configuration))) {
