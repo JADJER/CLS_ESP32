@@ -20,10 +20,13 @@
 
 #include "NimBLEDevice.h"
 
+#include "ConfigurationCharacteristicCallback.hpp"
 #include "bluetooth/Identificator.hpp"
-#include "bluetooth/characteristic/ConfigurationCharacteristicCallback.hpp"
+#include "ota/MessageHandler.hpp"
+#include "ota/UpdateCharacteristicCallback.hpp"
 
-Bluetooth::Bluetooth(ConfigurationPtr const &configuration) : m_configurationCharacteristicCallback(std::make_unique<ConfigurationCharacteristicCallback>(configuration)) {
+Bluetooth::Bluetooth(ConfigurationPtr const &configuration) : m_otaCharacteristicCallback(nullptr),
+                                                              m_configurationCharacteristicCallback(std::make_unique<ConfigurationCharacteristicCallback>(configuration)) {
 
   NimBLEDevice::init("CLS");
 
@@ -33,29 +36,16 @@ Bluetooth::Bluetooth(ConfigurationPtr const &configuration) : m_configurationCha
   {
     auto const service = server->createService(SERVICE_CONFIGURATION_UUID);
 
-    auto const pumpTimeoutCharacteristic = service->createCharacteristic(
-        CHARACTERISTIC_PUMP_TIMEOUT_UUID,
-        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+    auto const pumpTimeoutCharacteristic = service->createCharacteristic(CHARACTERISTIC_PUMP_TIMEOUT_UUID, NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+    auto const minimalSpeedCharacteristic = service->createCharacteristic(CHARACTERISTIC_MINIMAL_SPEED_UUID, NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+    auto const distanceForEnableCharacteristic = service->createCharacteristic(CHARACTERISTIC_DISTANCE_FOR_ENABLE_UUID, NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+    auto const totalDistanceCharacteristic = service->createCharacteristic(CHARACTERISTIC_TOTAL_DISTANCE_UUID, NIMBLE_PROPERTY::READ);
+    auto const nextDistanceCharacteristic = service->createCharacteristic(CHARACTERISTIC_NEXT_DISTANCE_UUID, NIMBLE_PROPERTY::READ);
+
     pumpTimeoutCharacteristic->setCallbacks(m_configurationCharacteristicCallback.get());
-
-    auto const minimalSpeedCharacteristic = service->createCharacteristic(
-        CHARACTERISTIC_MINIMAL_SPEED_UUID,
-        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
     minimalSpeedCharacteristic->setCallbacks(m_configurationCharacteristicCallback.get());
-
-    auto const distanceForEnableCharacteristic = service->createCharacteristic(
-        CHARACTERISTIC_DISTANCE_FOR_ENABLE_UUID,
-        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
     distanceForEnableCharacteristic->setCallbacks(m_configurationCharacteristicCallback.get());
-
-    auto const totalDistanceCharacteristic = service->createCharacteristic(
-        CHARACTERISTIC_TOTAL_DISTANCE_UUID,
-        NIMBLE_PROPERTY::READ);
     totalDistanceCharacteristic->setCallbacks(m_configurationCharacteristicCallback.get());
-
-    auto const nextDistanceCharacteristic = service->createCharacteristic(
-        CHARACTERISTIC_NEXT_DISTANCE_UUID,
-        NIMBLE_PROPERTY::READ);
     nextDistanceCharacteristic->setCallbacks(m_configurationCharacteristicCallback.get());
 
     service->start();
@@ -64,9 +54,8 @@ Bluetooth::Bluetooth(ConfigurationPtr const &configuration) : m_configurationCha
   {
     auto const service = server->createService(SERVICE_CONTROL_UUID);
 
-    auto const manualLubricateCharacteristic = service->createCharacteristic(
-        CHARACTERISTIC_MANUAL_LUBRICATE_UUID,
-        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+    auto const manualLubricateCharacteristic = service->createCharacteristic(CHARACTERISTIC_MANUAL_LUBRICATE_UUID, NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
     manualLubricateCharacteristic->setCallbacks(m_configurationCharacteristicCallback.get());
 
     service->start();
@@ -75,25 +64,13 @@ Bluetooth::Bluetooth(ConfigurationPtr const &configuration) : m_configurationCha
   {
     auto const service = server->createService(SERVICE_OTA_UUID);
 
-    auto const receiveFirmwareCharacteristic = service->createCharacteristic(
-        CHARACTERISTIC_RECEIVE_FIRMWARE_UUID,
-        NIMBLE_PROPERTY::INDICATE | NIMBLE_PROPERTY::WRITE);
-    receiveFirmwareCharacteristic->setCallbacks(m_otaCharacteristicCallback.get());
+    auto const dataCharacteristic = service->createCharacteristic(CHARACTERISTIC_DATA_UUID, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::INDICATE);
+    auto const commandCharacteristic = service->createCharacteristic(CHARACTERISTIC_COMMAND_UUID, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::INDICATE);
 
-    auto const otaBarCharacteristic = service->createCharacteristic(
-        CHARACTERISTIC_PROGRESS_UUID,
-        NIMBLE_PROPERTY::INDICATE | NIMBLE_PROPERTY::READ);
-    otaBarCharacteristic->setCallbacks(m_otaCharacteristicCallback.get());
+    m_otaCharacteristicCallback = std::make_unique<UpdateCharacteristicCallback>(std::make_unique<MessageHandler>(dataCharacteristic, commandCharacteristic));
 
-    auto const commandCharacteristic = service->createCharacteristic(
-        CHARACTERISTIC_COMMAND_UUID,
-        NIMBLE_PROPERTY::INDICATE | NIMBLE_PROPERTY::WRITE);
+    dataCharacteristic->setCallbacks(m_otaCharacteristicCallback.get());
     commandCharacteristic->setCallbacks(m_otaCharacteristicCallback.get());
-
-    auto const customerCharacteristic = service->createCharacteristic(
-        CHARACTERISTIC_CUSTOMER_UUID,
-        NIMBLE_PROPERTY::INDICATE | NIMBLE_PROPERTY::WRITE);
-    customerCharacteristic->setCallbacks(m_otaCharacteristicCallback.get());
 
     service->start();
   }
@@ -107,11 +84,8 @@ Bluetooth::~Bluetooth() {
 
 void Bluetooth::advertise() {
   auto const advertising = NimBLEDevice::getAdvertising();
-  //  advertising->addServiceUUID(SERVICE_CONFIGURATION_UUID);
-  //  advertising->addServiceUUID(SERVICE_CONTROL_UUID);
-  advertising->addServiceUUID(SERVICE_OTA_UUID);
-  advertising->setManufacturerData("Pavel Suprunov");
-
+  advertising->setManufacturerData("  jadjer");
+  advertising->addServiceUUID(ADVERTISING_UUID);
   advertising->setScanResponse(true);
   advertising->start();
 }

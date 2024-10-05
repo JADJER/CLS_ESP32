@@ -16,7 +16,7 @@
 // Created by jadjer on 9/25/24.
 //
 
-#include "bluetooth/characteristic/ConfigurationCharacteristicCallback.hpp"
+#include "ConfigurationCharacteristicCallback.hpp"
 
 #include "bluetooth/Identificator.hpp"
 

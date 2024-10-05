@@ -14,10 +14,13 @@ set(SOURCES
         src/Configuration.cpp
         src/ExternalPower.cpp
         src/ControllerBase.cpp
-        src/BluetoothUpdate.cpp
 
         src/bluetooth/Bluetooth.cpp
         src/bluetooth/ConfigurationCharacteristicCallback.cpp
+
+        src/bluetooth/ota/Updater.cpp
+        src/bluetooth/ota/MessageHandler.cpp
+        src/bluetooth/ota/UpdateCharacteristicCallback.cpp
 )
 
 idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS ${INCLUDE_DIRS})
