@@ -58,7 +58,10 @@ bool Updater::isStarted() const {
 bool Updater::begin(std::size_t const otaLength) {
   if (isStarted()) {
     ESP_LOGW(TAG, "Already started");
-    return false;
+
+    if (esp_ota_abort(m_handle) != ESP_OK) {
+      ESP_LOGE(TAG, "esp_ota_abort failed!");
+    }
   }
 
   if (esp_ota_begin(m_partition, otaLength, &m_handle) != ESP_OK) {
