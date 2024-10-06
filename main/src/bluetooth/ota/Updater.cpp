@@ -4,8 +4,7 @@
 
 #include "Updater.hpp"
 
-#include <cstring>
-#include <esp_log.h>
+#include "esp_log.h"
 
 auto constexpr TAG = "Update";
 
@@ -57,8 +56,6 @@ bool Updater::isStarted() const {
 
 bool Updater::begin(std::size_t const otaLength) {
   if (isStarted()) {
-    ESP_LOGW(TAG, "Already started");
-
     if (esp_ota_abort(m_handle) != ESP_OK) {
       ESP_LOGE(TAG, "esp_ota_abort failed!");
     }

@@ -11,7 +11,7 @@ auto constexpr TAG = "MessageHandler";
 auto constexpr OTA_BLOCK_SIZE = 4096;
 auto constexpr OTA_LAST_PACKET = 0xFF;
 auto constexpr OTA_LAST_SECTOR = 0xFFFF;
-auto constexpr OTA_COMMAND_LENGTH = 20;
+auto constexpr MINIMAL_PACKET_SIZE = 20;
 auto constexpr OTA_BLOCK_EMPTY_VALUE = 0x00;
 
 MessageHandler::MessageHandler(CharacteristicPtr dataCharacteristic, CharacteristicPtr commandCharacteristic) : m_updater(std::make_unique<Updater>()),
@@ -22,7 +22,7 @@ MessageHandler::MessageHandler(CharacteristicPtr dataCharacteristic, Characteris
 
 void MessageHandler::dataHandle(std::uint8_t const *data, std::size_t const dataLength) {
   auto const answer = [this](std::uint16_t const sector, BinaryAck const status) {
-    uint8_t commandAnswer[OTA_COMMAND_LENGTH] = {OTA_BLOCK_EMPTY_VALUE * OTA_COMMAND_LENGTH};
+    uint8_t commandAnswer[MINIMAL_PACKET_SIZE] = {OTA_BLOCK_EMPTY_VALUE * MINIMAL_PACKET_SIZE};
 
     commandAnswer[0] = sector & 0xff;
     commandAnswer[1] = (sector & 0xff00) >> 8;
@@ -33,10 +33,14 @@ void MessageHandler::dataHandle(std::uint8_t const *data, std::size_t const data
     m_dataCharacteristic->indicate(commandAnswer, 4);
   };
 
-  auto const serviceDataLength = 3;
-
-  if (dataLength < serviceDataLength) {
+  if (dataLength < MINIMAL_PACKET_SIZE) {
     ESP_LOGE(TAG, "recv ota data wrong length");
+
+    if (dataLength >= 2) {
+      auto const sector = (data[0]) + (data[1] * 256);
+      answer(sector, BINARY_ACK_PAYLOAD_LENGTH_ERROR);
+    }
+
     return;
   }
 
@@ -59,16 +63,9 @@ void MessageHandler::dataHandle(std::uint8_t const *data, std::size_t const data
     }
   }
 
-  auto const minimalDataLength = 1;
-
-  if (dataLength < serviceDataLength + minimalDataLength) {
-    ESP_LOGE(TAG, "recv ota data wrong length");
-    answer(sector, BINARY_ACK_PAYLOAD_LENGTH_ERROR);
-    return;
-  }
-
-  auto const payload = data + serviceDataLength;
-  auto const payloadLength = dataLength - serviceDataLength;
+  auto const payloadOffset = 3;
+  auto const payload = data + payloadOffset;
+  auto const payloadLength = dataLength - payloadOffset;
 
   std::memcpy(m_firmwareBuffer + m_firmwareBufferLength, payload, payloadLength);
   m_firmwareBufferLength += payloadLength;
@@ -90,7 +87,7 @@ void MessageHandler::dataHandle(std::uint8_t const *data, std::size_t const data
 
 void MessageHandler::commandHandle(std::uint8_t const *data, std::size_t const dataLength) {
   auto const answer = [this](Command const command, CommandAck const status) {
-    uint8_t commandAnswer[OTA_COMMAND_LENGTH] = {OTA_BLOCK_EMPTY_VALUE * OTA_COMMAND_LENGTH};
+    uint8_t commandAnswer[MINIMAL_PACKET_SIZE] = {OTA_BLOCK_EMPTY_VALUE * MINIMAL_PACKET_SIZE};
 
     commandAnswer[0] = COMMAND_ACK & 0xff;
     commandAnswer[1] = (COMMAND_ACK & 0xff00) >> 8;
@@ -104,8 +101,8 @@ void MessageHandler::commandHandle(std::uint8_t const *data, std::size_t const d
     m_commandCharacteristic->indicate(commandAnswer, 6);
   };
 
-  if (dataLength != OTA_COMMAND_LENGTH) {
-    ESP_LOGE(TAG, "recv ota start cmd wrong length (%d != %d)", dataLength, OTA_COMMAND_LENGTH);
+  if (dataLength < MINIMAL_PACKET_SIZE) {
+    ESP_LOGE(TAG, "recv ota start cmd wrong length (%d < %d)", dataLength, MINIMAL_PACKET_SIZE);
     return;
   }
 
