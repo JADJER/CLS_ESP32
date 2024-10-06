@@ -34,7 +34,7 @@ Controller::Controller(ConfigurationPtr configuration) : m_configuration(std::mo
   auto const nextDistance = m_configuration->getNextDistance();
   auto const totalDistance = m_configuration->getTotalDistance();
 
-  if (nextDistance == 0 or nextDistance <= totalDistance) {
+  if (nextDistance <= totalDistance) {
     auto const distanceForEnable = m_configuration->getDistanceForEnable();
 
     m_configuration->saveNextDistance(totalDistance + distanceForEnable);

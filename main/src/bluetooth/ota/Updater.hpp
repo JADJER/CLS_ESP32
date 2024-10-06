@@ -6,27 +6,25 @@
 
 #include <cstdint>
 #include <esp_ota_ops.h>
+#include <string>
 
 class Updater {
-public:
-  Updater();
-  ~Updater() = default;
+  using PartitionPtr = esp_partition_t const *;
 
 public:
-  [[nodiscard]] bool isAvailable() const;
+  Updater();
+
+public:
   [[nodiscard]] bool isStarted() const;
 
 public:
-  void begin(std::size_t otaLength);
-  void writeData(std::uint8_t const *data, std::size_t dataLength);
-  void end();
-  void install();
-  void abort();
+  bool begin(std::size_t otaLength);
+  bool writeData(std::uint8_t const *data, std::size_t dataLength);
+  bool end();
 
 private:
-  bool m_start = false;
-  esp_ota_handle_t m_otaHandle = 0;
-  esp_partition_t const *m_otaPartition = nullptr;
+  PartitionPtr m_partition = nullptr;
+  esp_ota_handle_t m_handle = 0;
 };
 
 #include <memory>
