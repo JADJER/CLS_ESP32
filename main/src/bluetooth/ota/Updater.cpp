@@ -4,113 +4,108 @@
 
 #include "Updater.hpp"
 
+#include <cstring>
 #include <esp_log.h>
 
 auto constexpr TAG = "Update";
 
-Updater::Updater() : m_otaPartition(esp_ota_get_next_update_partition(nullptr)) {
-  esp_ota_mark_app_valid_cancel_rollback();
+esp_partition_t const *getPartition() {
+  auto const bootPartition = esp_ota_get_boot_partition();
+  if (bootPartition == nullptr) {
+    ESP_LOGE(TAG, "boot partition is NULL!");
 
-  if (not isAvailable()) {
-    ESP_LOGE(TAG, "OTA partition not available");
+    return nullptr;
   }
+
+  if (bootPartition->type != ESP_PARTITION_TYPE_APP) {
+    ESP_LOGE(TAG, "esp_current_partition->type != ESP_PARTITION_TYPE_APP");
+
+    return nullptr;
+  }
+
+  auto partitionSubtype = ESP_PARTITION_SUBTYPE_APP_OTA_0;
+
+  auto const nextPartition = esp_ota_get_next_update_partition(bootPartition);
+  if (nextPartition) {
+    partitionSubtype = nextPartition->subtype;
+  }
+
+  auto const partition = esp_partition_find_first(ESP_PARTITION_TYPE_APP, partitionSubtype, nullptr);
+  if (partition == nullptr) {
+    ESP_LOGE(TAG, "partition nullptr!");
+    return nullptr;
+  }
+
+  return partition;
 }
 
-bool Updater::isAvailable() const {
-  return m_otaPartition == nullptr;
+Updater::Updater() : m_partition(getPartition()) {
+  esp_ota_mark_app_valid_cancel_rollback();
 }
 
 bool Updater::isStarted() const {
-  if (not isAvailable()) {
+  if (m_partition == nullptr) {
     return false;
   }
 
-  return m_start;
-}
-
-void Updater::begin(std::size_t const otaLength) {
-  if (not isAvailable()) {
-    return;
+  if (m_handle == 0) {
+    return false;
   }
 
+  return true;
+}
+
+bool Updater::begin(std::size_t const otaLength) {
   if (isStarted()) {
-    ESP_LOGW(TAG, "Update already begin...");
-    return;
+    ESP_LOGW(TAG, "Already started");
+    return false;
   }
 
-  m_start = true;
+  if (esp_ota_begin(m_partition, otaLength, &m_handle) != ESP_OK) {
+    ESP_LOGE(TAG, "esp_ota_begin failed!");
+    return false;
+  }
 
-  //  esp_err_t err = esp_ota_begin(m_otaPartition, otaLength, &m_otaHandle);
-  //  if (err != ESP_OK) {
-  //    ESP_LOGE(TAG, "esp_ota_begin failed!\r\n");
-  //    abort();
-  //  }
+  return true;
 }
 
-void Updater::writeData(std::uint8_t const *data, std::size_t const dataLength) {
-  if (not isAvailable()) {
-    return;
-  }
-
+bool Updater::writeData(std::uint8_t const *data, std::size_t const dataLength) {
   if (not isStarted()) {
     ESP_LOGE(TAG, "Not started");
-    return;
+    return false;
   }
 
-  //  esp_err_t err = esp_ota_write(m_otaHandle, static_cast<void const *>(data), dataLength);
-  //  if (err != ESP_OK) {
-  //    ESP_LOGE(TAG, "esp_ota_write failed!\r\n");
-  //    abort();
-  //  }
+  if (esp_ota_write(m_handle, data, dataLength) != ESP_OK) {
+    ESP_LOGE(TAG, "esp_ota_write failed!");
+
+    if (esp_ota_abort(m_handle) != ESP_OK) {
+      ESP_LOGE(TAG, "esp_ota_abort failed!");
+    }
+
+    m_handle = 0;
+
+    return false;
+  }
+
+  return true;
 }
 
-void Updater::end() {
-  if (not isAvailable()) {
-    return;
-  }
-
+bool Updater::end() {
   if (not isStarted()) {
     ESP_LOGE(TAG, "Not started");
-    return;
+    return false;
   }
 
-  //  esp_err_t err = esp_ota_end(m_otaHandle);
-  //  if (err != ESP_OK) {
-  //    ESP_LOGE(TAG, "esp_ota_end failed!\r\n");
-  //    abort();
-  //  }
+  if (esp_ota_end(m_handle) != ESP_OK) {
+    ESP_LOGE(TAG, "esp_ota_end failed!");
 
-  m_start = false;
-}
-
-void Updater::install() {
-  if (not isAvailable()) {
-    return;
+    return false;
   }
 
-  if (not isStarted()) {
-    ESP_LOGE(TAG, "Not started");
-    return;
+  if (esp_ota_set_boot_partition(m_partition) != ESP_OK) {
+    ESP_LOGE(TAG, "esp_ota_set_boot_partition failed!");
+    return false;
   }
 
-  //  esp_err_t err = esp_ota_set_boot_partition(m_otaPartition);
-  //  if (err != ESP_OK) {
-  //    ESP_LOGE(TAG, "esp_ota_set_boot_partition failed!\r\n");
-  //    abort();
-  //    return;
-  //  }
-}
-
-void Updater::abort() {
-  if (not isAvailable()) {
-    return;
-  }
-
-  //  esp_err_t err = esp_ota_abort(m_otaHandle);
-  //  if (err != ESP_OK) {
-  //    ESP_LOGE(TAG, "esp_ota_abort failed!\r\n");
-  //    return;
-  //  }
-
-  m_start = false;
+  return true;
 }

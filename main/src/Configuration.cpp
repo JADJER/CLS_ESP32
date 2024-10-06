@@ -44,7 +44,7 @@ esp_err_t nvs_get_float(nvs_handle_t handle, char const *key, float *value) {
   return err;
 }
 
-constexpr auto const INCH_TO_METER = 0.0254;
+auto constexpr METERS_IN_INCH = 0.0254;
 
 Configuration::Configuration() : m_isManualLubricate(false),
                                  m_storageHandle(0) {
@@ -105,7 +105,7 @@ std::uint32_t Configuration::getPumpTimeout() const {
 float Configuration::getWheelLength() const {
   std::uint32_t const wheelDiameter_InInches = CONFIG_WHEEL_DIAMETER;
 
-  float const wheelDiameter_InMeter = static_cast<float>(wheelDiameter_InInches) * INCH_TO_METER;
+  float const wheelDiameter_InMeter = static_cast<float>(wheelDiameter_InInches) * METERS_IN_INCH;
   float wheelLength = wheelDiameter_InMeter * static_cast<float>(M_PI);
 
   nvs_get_float(m_storageHandle, "wheel_length", &wheelLength);

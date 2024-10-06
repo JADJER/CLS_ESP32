@@ -21,8 +21,8 @@ void UpdateCharacteristicCallback::onWrite(NimBLECharacteristic *pCharacteristic
   if (uuid == CHARACTERISTIC_DATA_UUID) {
     auto const value = pCharacteristic->getValue();
 
-    auto const length = value.length();
     auto const data = value.data();
+    auto const length = value.length();
 
     m_messageHandler->dataHandle(data, length);
   }
@@ -30,8 +30,8 @@ void UpdateCharacteristicCallback::onWrite(NimBLECharacteristic *pCharacteristic
   if (uuid == CHARACTERISTIC_COMMAND_UUID) {
     auto const value = pCharacteristic->getValue();
 
-    auto const length = value.length();
     auto const data = value.data();
+    auto const length = value.length();
 
     m_messageHandler->commandHandle(data, length);
   }
