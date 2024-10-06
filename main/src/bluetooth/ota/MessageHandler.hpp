@@ -35,23 +35,24 @@ public:
   MessageHandler(CharacteristicPtr dataCharacteristic, CharacteristicPtr commandCharacteristic);
 
 public:
-  void dataHandle(std::uint8_t const *data, std::size_t length);
-  void commandHandle(std::uint8_t const *data, std::size_t length);
+  void dataHandle(std::uint8_t const *data, std::size_t dataLength);
+  void commandHandle(std::uint8_t const *data, std::size_t dataLength);
 
 private:
   void resetBuffer();
 
 private:
   UpdaterPtr m_updater = nullptr;
-  Buffer m_firmwareBuffer = nullptr;
   CharacteristicPtr m_dataCharacteristic = nullptr;
   CharacteristicPtr m_commandCharacteristic = nullptr;
 
 private:
+  Buffer m_firmwareBuffer = nullptr;
+  std::uint32_t m_firmwareBufferLength = 0;
+
+private:
   std::uint32_t m_currentSector = 0;
   std::uint32_t m_currentPacket = 0;
-  std::uint32_t m_otaTotalLength = 0;
-  std::uint32_t m_firmwareBufferOffset = 0;
 };
 
 #include <memory>
